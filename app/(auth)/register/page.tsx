@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, startTransition } from "react";
 import { toast } from "@/components/chat/toast";
 import { type RegisterActionState, register } from "../actions";
 
@@ -18,9 +17,6 @@ export default function Page() {
     { status: "idle" }
   );
 
-  const { update: updateSession } = useSession();
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: router and updateSession are stable refs
   useEffect(() => {
     if (state.status === "user_exists") {
       toast({ type: "error", description: "¡Este correo ya está registrado!" });
@@ -35,17 +31,18 @@ export default function Page() {
     } else if (state.status === "success") {
       toast({ type: "success", description: "¡Cuenta creada exitosamente!" });
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      router.push("/login");
     }
-  }, [state.status]);
+  }, [state.status, router]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     formData.set("role", role);
     setEmail(formData.get("email") as string);
-    formAction(formData);
+    startTransition(() => {
+      formAction(formData);
+    });
   };
 
   return (
@@ -125,7 +122,6 @@ export default function Page() {
           />
         </div>
 
-        {/* Pills de rol */}
         <div>
           {/* biome-ignore lint/a11y/noLabelWithoutControl: botones personalizados de rol */}
           <label className="mb-2 block text-[11px] font-medium text-edubot-primary">

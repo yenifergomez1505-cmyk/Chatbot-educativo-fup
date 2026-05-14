@@ -1,9 +1,7 @@
 "use server";
 
 import { z } from "zod";
-
 import { createUser, getUser } from "@/lib/db/queries";
-
 import { signIn } from "./auth";
 
 const authFormSchema = z.object({
@@ -11,7 +9,6 @@ const authFormSchema = z.object({
   password: z.string().min(6),
 });
 
-// ✅ NUEVO: esquema de validación para el registro con rol
 const registerFormSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -43,7 +40,6 @@ export const login = async (
     if (error instanceof z.ZodError) {
       return { status: "invalid_data" };
     }
-
     return { status: "failed" };
   }
 };
@@ -63,7 +59,6 @@ export const register = async (
   formData: FormData
 ): Promise<RegisterActionState> => {
   try {
-    // ✅ CAMBIADO: ahora valida también el rol
     const validatedData = registerFormSchema.parse({
       email: formData.get("email"),
       password: formData.get("password"),
@@ -76,25 +71,17 @@ export const register = async (
       return { status: "user_exists" } as RegisterActionState;
     }
 
-    // ✅ CAMBIADO: pasa el rol a createUser
     await createUser(
       validatedData.email,
       validatedData.password,
       validatedData.role
     );
 
-    await signIn("credentials", {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
-    });
-
     return { status: "success" };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { status: "invalid_data" };
     }
-
     return { status: "failed" };
   }
 };

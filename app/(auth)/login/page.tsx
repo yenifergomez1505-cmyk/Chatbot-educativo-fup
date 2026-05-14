@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, startTransition } from "react";
 import { toast } from "@/components/chat/toast";
 import { type LoginActionState, login } from "../actions";
 
@@ -36,7 +36,9 @@ export default function Page() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     setEmail(formData.get("email") as string);
-    formAction(formData);
+    startTransition(() => {
+      formAction(formData);
+    });
   };
 
   return (

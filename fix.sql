@@ -1,0 +1,7 @@
+﻿ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "name" text;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailVerified" boolean NOT NULL DEFAULT false;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "image" text;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "isAnonymous" boolean NOT NULL DEFAULT false;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "role" varchar(20) NOT NULL DEFAULT 'estudiante';
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "createdAt" timestamp NOT NULL DEFAULT now();
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "updatedAt" timestamp NOT NULL DEFAULT now();
