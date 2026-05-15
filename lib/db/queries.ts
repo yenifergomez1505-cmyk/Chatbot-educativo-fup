@@ -1,5 +1,5 @@
 import "server-only";
-
+import { consultasSinRespuesta, calificacionesRespuesta } from "./schema";
 import {
   and,
   asc,
@@ -637,4 +637,51 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
       "Failed to get stream ids by chat id"
     );
   }
+}
+
+// ── Módulo 2: Consultas sin respuesta ──
+
+export async function saveConsultaSinRespuesta({
+  chatId,
+  userId,
+  pregunta,
+  materia,
+}: {
+  chatId: string;
+  userId: string;
+  pregunta: string;
+  materia: string;
+}) {
+  return await db.insert(consultasSinRespuesta).values({
+    chatId,
+    userId,
+    pregunta,
+    materia,
+    respondida: false,
+    creadoEn: new Date(),
+  });
+}
+
+// ── Módulo 2: Calificaciones ──
+
+export async function saveCalificacion({
+  messageId,
+  util,
+  materia,
+  chatId,
+  userId,
+}: {
+  messageId: string;
+  util: boolean;
+  materia: string;
+  chatId: string;
+  userId: string;
+}) {
+  return await db.insert(calificacionesRespuesta).values({
+    messageId,
+    util,
+    materia,
+    chatId,
+    userId,
+  });
 }

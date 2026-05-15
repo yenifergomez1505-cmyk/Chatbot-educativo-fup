@@ -15,6 +15,13 @@
       "when": 1778734629569,
       "tag": "0001_aberrant_black_bird",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778874795989,
+      "tag": "0002_rapid_the_watchers",
+      "breakpoints": true
     }
   ]
 }

@@ -52,6 +52,7 @@ function PureMessages({
   useDataStream();
 
   const prevChatIdRef = useRef(chatId);
+
   useEffect(() => {
     if (prevChatIdRef.current !== chatId) {
       prevChatIdRef.current = chatId;
@@ -62,10 +63,11 @@ function PureMessages({
   return (
     <div className="relative flex-1 bg-background">
       {messages.length === 0 && !isLoading && (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
           <Greeting />
         </div>
       )}
+
       <div
         className={cn(
           "absolute inset-0 touch-pan-y overflow-y-auto",
@@ -99,9 +101,10 @@ function PureMessages({
             />
           ))}
 
-          {status === "submitted" && messages.at(-1)?.role !== "assistant" && (
-            <ThinkingMessage />
-          )}
+          {status === "submitted" &&
+            messages.at(-1)?.role !== "assistant" && (
+              <ThinkingMessage />
+            )}
 
           <div
             className="min-h-[24px] min-w-[24px] shrink-0"

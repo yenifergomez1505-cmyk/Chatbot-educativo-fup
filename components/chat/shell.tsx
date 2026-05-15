@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,14 +13,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
 import { useActiveChat } from "@/hooks/use-active-chat";
+
 import {
   initialArtifactData,
   useArtifact,
   useArtifactSelector,
 } from "@/hooks/use-artifact";
+
 import type { Attachment, ChatMessage } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
 import { Artifact } from "./artifact";
 import { ChatHeader } from "./chat-header";
 import { DataStreamHandler } from "./data-stream-handler";
@@ -51,14 +57,20 @@ export function ChatShell() {
   const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(
     null
   );
+
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+
   const { setArtifact } = useArtifact();
+
+  const searchParams = useSearchParams();
 
   const stopRef = useRef(stop);
   stopRef.current = stop;
 
   const prevChatIdRef = useRef(chatId);
+
   useEffect(() => {
     if (prevChatIdRef.current !== chatId) {
       prevChatIdRef.current = chatId;
@@ -68,6 +80,22 @@ export function ChatShell() {
       setAttachments([]);
     }
   }, [chatId, setArtifact]);
+
+  useEffect(() => {
+    const prompt = searchParams.get("prompt");
+
+    if (prompt && messages.length === 0) {
+      sendMessage({
+        role: "user",
+        parts: [
+          {
+            type: "text",
+            text: prompt,
+          },
+        ],
+      });
+    }
+  }, [searchParams, messages.length, sendMessage]);
 
   return (
     <>
@@ -97,6 +125,7 @@ export function ChatShell() {
                   ?.filter((p) => p.type === "text")
                   .map((p) => p.text)
                   .join("");
+
                 setInput(text ?? "");
                 setEditingMessage(msg);
               }}
@@ -127,13 +156,16 @@ export function ChatShell() {
                     editingMessage
                       ? async () => {
                           const msg = editingMessage;
+
                           setEditingMessage(null);
+
                           await submitEditedMessage({
                             message: msg,
                             text: input,
                             setMessages,
                             regenerate,
                           });
+
                           setInput("");
                         }
                       : sendMessage
@@ -178,21 +210,29 @@ export function ChatShell() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Activate AI Gateway</AlertDialogTitle>
+
             <AlertDialogDescription>
               This application requires{" "}
-              {process.env.NODE_ENV === "production" ? "the owner" : "you"} to
-              activate Vercel AI Gateway.
+              {process.env.NODE_ENV === "production"
+                ? "the owner"
+                : "you"}{" "}
+              to activate Vercel AI Gateway.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
+
             <AlertDialogAction
               onClick={() => {
                 window.open(
                   "https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dadd-credit-card",
                   "_blank"
                 );
-                window.location.href = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/`;
+
+                window.location.href = `${
+                  process.env.NEXT_PUBLIC_BASE_PATH ?? ""
+                }/`;
               }}
             >
               Activate

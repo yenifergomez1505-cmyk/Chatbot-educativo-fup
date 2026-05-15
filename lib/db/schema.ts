@@ -154,3 +154,27 @@ export const passwordResetToken = pgTable("PasswordResetToken", {
 });
 
 export type PasswordResetToken = InferSelectModel<typeof passwordResetToken>;
+
+// ── Módulo 2: Consultas sin respuesta (para el docente) ──
+export const consultasSinRespuesta = pgTable("consultas_sin_respuesta", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  chatId: text("chat_id").notNull(),
+  userId: uuid("user_id").notNull(),
+  pregunta: text("pregunta").notNull(),
+  materia: text("materia").notNull(),
+  respondida: boolean("respondida").default(false).notNull(),
+  respuestaDocente: text("respuesta_docente"),
+  respondidoEn: timestamp("respondido_en"),
+  creadoEn: timestamp("creado_en").defaultNow().notNull(),
+});
+
+// ── Módulo 2: Calificaciones de respuestas (útil / no útil) ──
+export const calificacionesRespuesta = pgTable("calificaciones_respuesta", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  chatId: text("chat_id").notNull(),
+  userId: uuid("user_id").notNull(),
+  messageId: text("message_id").notNull(),
+  util: boolean("util").notNull(),
+  materia: text("materia").notNull(),
+  creadoEn: timestamp("creado_en").defaultNow().notNull(),
+});

@@ -39,6 +39,7 @@ import {
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
 import { ChatbotError } from "@/lib/errors";
+import { getMateriaSystemPrompt } from "@/lib/materias";
 import { checkIpRateLimit } from "@/lib/ratelimit";
 import type { ChatMessage } from "@/lib/types";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
@@ -68,8 +69,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { id, message, messages, selectedChatModel, selectedVisibilityType } =
-      requestBody;
+    const {
+      id,
+      message,
+      messages,
+      selectedChatModel,
+      selectedVisibilityType,
+      materia,
+    } = requestBody;
 
     const [, session] = await Promise.all([
       checkBotId().catch(() => null),
@@ -193,7 +200,9 @@ export async function POST(request: Request) {
       execute: async ({ writer: dataStream }) => {
         const result = streamText({
           model: getLanguageModel(chatModel),
-          system: systemPrompt({ requestHints, supportsTools }),
+          system: materia
+            ? getMateriaSystemPrompt(materia)
+            : systemPrompt({ requestHints, supportsTools }),
           messages: modelMessages,
           stopWhen: stepCountIs(5),
           experimental_activeTools:
