@@ -13,6 +13,7 @@ const registerFormSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   role: z.enum(["estudiante", "docente"]).default("estudiante"),
+  name: z.string().optional(),
 });
 
 export type LoginActionState = {
@@ -63,6 +64,7 @@ export const register = async (
       email: formData.get("email"),
       password: formData.get("password"),
       role: formData.get("role"),
+      name: formData.get("name"),
     });
 
     const [user] = await getUser(validatedData.email);
@@ -74,7 +76,8 @@ export const register = async (
     await createUser(
       validatedData.email,
       validatedData.password,
-      validatedData.role
+      validatedData.role,
+      validatedData.name  ?? ""
     );
 
     return { status: "success" };

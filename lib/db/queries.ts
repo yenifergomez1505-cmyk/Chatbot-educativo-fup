@@ -52,14 +52,15 @@ export async function getUser(email: string): Promise<User[]> {
 export async function createUser(
   email: string,
   password: string,
-  role: UserRole = "estudiante"
+  role: UserRole = "estudiante",
+  name?: string
 ) {
   const hashedPassword = generateHashedPassword(password);
 
   try {
     return await db
       .insert(user)
-      .values({ email, password: hashedPassword, role });
+      .values({ email, password: hashedPassword, role, name: name || null });
   } catch (_error) {
     throw new ChatbotError("bad_request:database", "Failed to create user");
   }

@@ -88,25 +88,25 @@ export const {
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id as string;
-        token.type = user.type;
-        // ✅ NUEVO: guarda el rol en el token
-        token.role = user.role;
-      }
-
-      return token;
-    },
-    session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.type = token.type;
-        // ✅ NUEVO: pasa el rol a la sesión
-        session.user.role = token.role;
-      }
-
-      return session;
-    },
+   jwt({ token, user }) {
+  if (user) {
+    token.id = user.id as string;
+    token.type = user.type;
+    token.role = user.role;
+    token.name = user.name;
+    token.image = user.image;
+  }
+  return token;
+},
+session({ session, token }) {
+  if (session.user) {
+    session.user.id = token.id;
+    session.user.type = token.type;
+    session.user.role = token.role;
+    session.user.name = token.name;
+    session.user.image = token.image as string;
+  }
+  return session;
+},
   },
 });
