@@ -1,4 +1,5 @@
 import equal from "fast-deep-equal";
+import { BookmarkIcon } from "lucide-react";
 import { memo } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
@@ -27,24 +28,50 @@ export function PureMessageActions({
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
 
-  if (isLoading) {
-    return null;
-  }
+  if (isLoading) return null;
 
   const textFromParts = message.parts
     ?.filter((part) => part.type === "text")
-    .map((part) => part.text)
+    .map((part) => (part as { type: "text"; text: string }).text)
     .join("\n")
     .trim();
 
   const handleCopy = async () => {
     if (!textFromParts) {
-      toast.error("There's no text to copy!");
+      toast.error("No hay texto para copiar");
+      return;
+    }
+    await copyToClipboard(textFromParts);
+    toast.success("Copiado al portapapeles");
+  };
+
+  const handleGuardar = async () => {
+    if (!textFromParts) {
+      toast.error("No hay contenido para guardar");
       return;
     }
 
-    await copyToClipboard(textFromParts);
-    toast.success("Copied to clipboard!");
+    // Obtener la materia desde la URL
+    const params = new URLSearchParams(window.location.search);
+    const materia = params.get("materia") ?? "sin-materia";
+
+    try {
+      const res = await fetch("/api/auth/recursos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chatId,
+          messageId: message.id,
+          contenido: textFromParts,
+          materia,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Error al guardar");
+      toast.success("Respuesta guardada en Mis recursos");
+    } catch {
+      toast.error("Error al guardar el recurso");
+    }
   };
 
   if (message.role === "user") {
@@ -56,7 +83,7 @@ export function PureMessageActions({
               className="size-7 text-muted-foreground/50 hover:text-foreground"
               data-testid="message-edit-button"
               onClick={onEdit}
-              tooltip="Edit"
+              tooltip="Editar"
             >
               <PencilEditIcon />
             </Action>
@@ -64,7 +91,7 @@ export function PureMessageActions({
           <Action
             className="size-7 text-muted-foreground/50 hover:text-foreground"
             onClick={handleCopy}
-            tooltip="Copy"
+            tooltip="Copiar"
           >
             <CopyIcon />
           </Action>
@@ -75,14 +102,25 @@ export function PureMessageActions({
 
   return (
     <Actions className="-ml-0.5 opacity-0 transition-opacity duration-150 group-hover/message:opacity-100">
+      {/* Copiar */}
       <Action
         className="text-muted-foreground/50 hover:text-foreground"
         onClick={handleCopy}
-        tooltip="Copy"
+        tooltip="Copiar"
       >
         <CopyIcon />
       </Action>
 
+      {/* ✅ NUEVO: Guardar respuesta */}
+      <Action
+        className="text-muted-foreground/50 hover:text-edubot-primary"
+        onClick={handleGuardar}
+        tooltip="Guardar en Mis recursos"
+      >
+        <BookmarkIcon className="size-4" />
+      </Action>
+
+      {/* Útil */}
       <Action
         className="text-muted-foreground/50 hover:text-foreground"
         data-testid="message-upvote"
@@ -101,41 +139,33 @@ export function PureMessageActions({
           );
 
           toast.promise(upvote, {
-            loading: "Upvoting Response...",
+            loading: "Votando...",
             success: () => {
               mutate<Vote[]>(
                 `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/vote?chatId=${chatId}`,
                 (currentVotes) => {
-                  if (!currentVotes) {
-                    return [];
-                  }
-
+                  if (!currentVotes) return [];
                   const votesWithoutCurrent = currentVotes.filter(
                     (currentVote) => currentVote.messageId !== message.id
                   );
-
                   return [
                     ...votesWithoutCurrent,
-                    {
-                      chatId,
-                      messageId: message.id,
-                      isUpvoted: true,
-                    },
+                    { chatId, messageId: message.id, isUpvoted: true },
                   ];
                 },
                 { revalidate: false }
               );
-
-              return "Upvoted Response!";
+              return "¡Marcado como útil!";
             },
-            error: "Failed to upvote response.",
+            error: "Error al votar",
           });
         }}
-        tooltip="Upvote Response"
+        tooltip="Útil"
       >
         <ThumbUpIcon />
       </Action>
 
+      {/* No útil */}
       <Action
         className="text-muted-foreground/50 hover:text-foreground"
         data-testid="message-downvote"
@@ -154,37 +184,28 @@ export function PureMessageActions({
           );
 
           toast.promise(downvote, {
-            loading: "Downvoting Response...",
+            loading: "Votando...",
             success: () => {
               mutate<Vote[]>(
                 `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/vote?chatId=${chatId}`,
                 (currentVotes) => {
-                  if (!currentVotes) {
-                    return [];
-                  }
-
+                  if (!currentVotes) return [];
                   const votesWithoutCurrent = currentVotes.filter(
                     (currentVote) => currentVote.messageId !== message.id
                   );
-
                   return [
                     ...votesWithoutCurrent,
-                    {
-                      chatId,
-                      messageId: message.id,
-                      isUpvoted: false,
-                    },
+                    { chatId, messageId: message.id, isUpvoted: false },
                   ];
                 },
                 { revalidate: false }
               );
-
-              return "Downvoted Response!";
+              return "Marcado como no útil";
             },
-            error: "Failed to downvote response.",
+            error: "Error al votar",
           });
         }}
-        tooltip="Downvote Response"
+        tooltip="No útil"
       >
         <ThumbDownIcon />
       </Action>
@@ -195,13 +216,8 @@ export function PureMessageActions({
 export const MessageActions = memo(
   PureMessageActions,
   (prevProps, nextProps) => {
-    if (!equal(prevProps.vote, nextProps.vote)) {
-      return false;
-    }
-    if (prevProps.isLoading !== nextProps.isLoading) {
-      return false;
-    }
-
+    if (!equal(prevProps.vote, nextProps.vote)) return false;
+    if (prevProps.isLoading !== nextProps.isLoading) return false;
     return true;
   }
 );

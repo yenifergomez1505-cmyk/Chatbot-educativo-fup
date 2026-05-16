@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {
+  ArrowLeftIcon,
+  BookmarkIcon,
+  FilterIcon,
+  TrashIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeftIcon, TrashIcon, BookmarkIcon, FilterIcon } from "lucide-react";
 
 const MATERIA_LABELS: Record<string, string> = {
   poo: "Programación Orientada a Objetos",
@@ -33,7 +38,7 @@ export default function RecursosPage() {
   const [filtroMateria, setFiltroMateria] = useState<string>("todas");
 
   useEffect(() => {
-    fetch("/api/recursos")
+    fetch("/api/auth/recursos")
       .then((r) => r.json())
       .then((data) => {
         setRecursos(data);
@@ -47,7 +52,7 @@ export default function RecursosPage() {
 
   const handleEliminar = async (id: string) => {
     try {
-      await fetch(`/api/recursos?id=${id}`, { method: "DELETE" });
+      await fetch(`/api/auth/recursos?id=${id}`, { method: "DELETE" });
       setRecursos((prev) => prev.filter((r) => r.id !== id));
       toast.success("Recurso eliminado");
     } catch {
@@ -55,9 +60,10 @@ export default function RecursosPage() {
     }
   };
 
-  const recursosFiltrados = filtroMateria === "todas"
-    ? recursos
-    : recursos.filter((r) => r.materia === filtroMateria);
+  const recursosFiltrados =
+    filtroMateria === "todas"
+      ? recursos
+      : recursos.filter((r) => r.materia === filtroMateria);
 
   if (loading) {
     return (
@@ -72,9 +78,9 @@ export default function RecursosPage() {
       {/* Header */}
       <div className="bg-primary px-6 py-4 flex items-center gap-3">
         <button
-          type="button"
-          onClick={() => router.push("/")}
           className="text-primary-foreground hover:opacity-80 transition-opacity"
+          onClick={() => router.push("/")}
+          type="button"
         >
           <ArrowLeftIcon className="size-5" />
         </button>
@@ -91,22 +97,25 @@ export default function RecursosPage() {
         {/* Filtro por materia */}
         <div className="flex items-center gap-2 flex-wrap">
           <FilterIcon className="size-4 text-muted-foreground" />
-          {["todas", "poo", "estructura-de-datos", "ingenieria-de-software"].map(
-            (m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setFiltroMateria(m)}
-                className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
-                  filtroMateria === m
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-muted-foreground border-border hover:border-primary/50"
-                }`}
-              >
-                {m === "todas" ? "Todas" : MATERIA_LABELS[m]}
-              </button>
-            )
-          )}
+          {[
+            "todas",
+            "poo",
+            "estructura-de-datos",
+            "ingenieria-de-software",
+          ].map((m) => (
+            <button
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
+                filtroMateria === m
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:border-primary/50"
+              }`}
+              key={m}
+              onClick={() => setFiltroMateria(m)}
+              type="button"
+            >
+              {m === "todas" ? "Todas" : MATERIA_LABELS[m]}
+            </button>
+          ))}
         </div>
 
         {/* Lista de recursos */}
@@ -119,9 +128,9 @@ export default function RecursosPage() {
                 : "No tienes recursos guardados para esta materia."}
             </p>
             <button
-              type="button"
-              onClick={() => router.push("/")}
               className="text-xs text-primary hover:underline"
+              onClick={() => router.push("/")}
+              type="button"
             >
               Ir al chatbot
             </button>
@@ -130,8 +139,8 @@ export default function RecursosPage() {
           <div className="space-y-3">
             {recursosFiltrados.map((recurso) => (
               <div
-                key={recurso.id}
                 className="bg-card rounded-2xl border border-border p-4 space-y-3"
+                key={recurso.id}
               >
                 {/* Header del recurso */}
                 <div className="flex items-center justify-between">
@@ -151,10 +160,10 @@ export default function RecursosPage() {
                     )}
                   </div>
                   <button
-                    type="button"
-                    onClick={() => handleEliminar(recurso.id)}
                     className="text-muted-foreground hover:text-destructive transition-colors"
+                    onClick={() => handleEliminar(recurso.id)}
                     title="Eliminar recurso"
+                    type="button"
                   >
                     <TrashIcon className="size-4" />
                   </button>
@@ -175,9 +184,9 @@ export default function RecursosPage() {
                     })}
                   </span>
                   <button
-                    type="button"
-                    onClick={() => router.push(`/chat/${recurso.chatId}`)}
                     className="text-xs text-primary hover:underline"
+                    onClick={() => router.push(`/chat/${recurso.chatId}`)}
+                    type="button"
                   >
                     Ver conversación →
                   </button>
