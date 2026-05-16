@@ -32,17 +32,17 @@ export const Greeting = () => {
   const [selected, setSelected] = useState<MateriaId | null>(null);
 
   const handleIniciar = () => {
-    if (!selected) return;
-
-    const preguntas: Record<MateriaId, string> = {
+    if (!selected) {
+      return;
+    }
+    const preguntas: Record<string, string> = {
       poo: "Explícame qué es la programación orientada a objetos",
       "estructura-de-datos": "Explícame qué es una lista enlazada",
       "ingenieria-de-software": "¿Qué es la ingeniería de software?",
     };
-
     const pregunta = preguntas[selected];
     const encoded = encodeURIComponent(pregunta);
-    router.push(`/chat/new?prompt=${encoded}&materia=${selected}`);
+    router.push(`/?query=${encoded}&materia=${selected}`);
   };
 
   return (

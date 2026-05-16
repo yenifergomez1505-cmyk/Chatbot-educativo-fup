@@ -1,6 +1,10 @@
-import { customProvider, gateway } from "ai";
+import { createGroq } from "@ai-sdk/groq";
+import { customProvider } from "ai";
 import { isTestEnvironment } from "../constants";
-import { titleModel } from "./models";
+
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY ?? "",
+});
 
 export const myProvider = isTestEnvironment
   ? (() => {
@@ -18,13 +22,12 @@ export function getLanguageModel(modelId: string) {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel(modelId);
   }
-
-  return gateway.languageModel(modelId);
+  return groq("llama-3.3-70b-versatile");
 }
 
 export function getTitleModel() {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel("title-model");
   }
-  return gateway.languageModel(titleModel.id);
+  return groq("llama-3.3-70b-versatile");
 }

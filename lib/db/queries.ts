@@ -1,3 +1,6 @@
+import {
+  recursoGuardado,
+} from "./schema";
 import "server-only";
 import { consultasSinRespuesta, calificacionesRespuesta } from "./schema";
 import {
@@ -685,4 +688,50 @@ export async function saveCalificacion({
     chatId,
     userId,
   });
+}
+
+// ── Módulo 4: Recursos guardados ──
+
+export async function saveRecurso({
+  userId,
+  chatId,
+  messageId,
+  contenido,
+  materia,
+  etiqueta,
+}: {
+  userId: string;
+  chatId: string;
+  messageId: string;
+  contenido: string;
+  materia: string;
+  etiqueta?: string;
+}) {
+  return await db.insert(recursoGuardado).values({
+    userId,
+    chatId,
+    messageId,
+    contenido,
+    materia,
+    etiqueta: etiqueta ?? null,
+  });
+}
+
+export async function getRecursosByUserId(userId: string) {
+  return await db
+    .select()
+    .from(recursoGuardado)
+    .where(eq(recursoGuardado.userId, userId))
+    .orderBy(desc(recursoGuardado.creadoEn));
+}
+
+export async function deleteRecurso(id: string, userId: string) {
+  return await db
+    .delete(recursoGuardado)
+    .where(
+      and(
+        eq(recursoGuardado.id, id),
+        eq(recursoGuardado.userId, userId)
+      )
+    );
 }

@@ -82,21 +82,20 @@ export function ChatShell() {
   }, [chatId, setArtifact]);
 
   useEffect(() => {
-    const prompt = searchParams.get("prompt");
+    const query = searchParams.get("query");
 
-    if (prompt && messages.length === 0) {
+    if (query && messages.length === 0) {
       sendMessage({
         role: "user",
         parts: [
           {
             type: "text",
-            text: prompt,
+            text: query,
           },
         ],
       });
     }
   }, [searchParams, messages.length, sendMessage]);
-
   return (
     <>
       <div className="flex h-dvh w-full flex-row overflow-hidden">

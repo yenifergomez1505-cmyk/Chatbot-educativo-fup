@@ -178,3 +178,17 @@ export const calificacionesRespuesta = pgTable("calificaciones_respuesta", {
   materia: text("materia").notNull(),
   creadoEn: timestamp("creado_en").defaultNow().notNull(),
 });
+
+// ── Módulo 4: Recursos guardados por el estudiante ──
+export const recursoGuardado = pgTable("recursos_guardados", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => user.id),
+  chatId: text("chat_id").notNull(),
+  messageId: text("message_id").notNull(),
+  contenido: text("contenido").notNull(),
+  materia: text("materia").notNull(),
+  etiqueta: text("etiqueta"),
+  creadoEn: timestamp("creado_en").defaultNow().notNull(),
+});
+
+export type RecursoGuardado = typeof recursoGuardado.$inferSelect;

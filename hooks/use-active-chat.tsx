@@ -138,6 +138,10 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
             })
           );
 
+        const params = new URLSearchParams(window.location.search);
+        const materia =
+          params.get("materia") ?? (request.body as any)?.materia ?? undefined;
+
         return {
           body: {
             id: request.id,
@@ -146,6 +150,7 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
               : { message: lastMessage }),
             selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibility,
+            materia: materia ?? undefined,
             ...request.body,
           },
         };
