@@ -9,9 +9,15 @@ const authFormSchema = z.object({
   password: z.string().min(6),
 });
 
+// validación de correo institucional
 const registerFormSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z
+    .string()
+    .email("Correo inválido")
+    .refine((email) => email.endsWith("@fup.edu.co"), {
+      message: "Debes usar tu correo institucional (@fup.edu.co)",
+    }),
+  password: z.string().min(6, "La contraseña debe tener mínimo 6 caracteres"),
   role: z.enum(["estudiante", "docente"]).default("estudiante"),
   name: z.string().optional(),
 });
@@ -52,7 +58,8 @@ export type RegisterActionState = {
     | "success"
     | "failed"
     | "user_exists"
-    | "invalid_data";
+    | "invalid_data"
+    | "invalid_email"; // estado para correo no institucional
 };
 
 export const register = async (
@@ -77,12 +84,19 @@ export const register = async (
       validatedData.email,
       validatedData.password,
       validatedData.role,
-      validatedData.name  ?? ""
+      validatedData.name ?? ""
     );
 
     return { status: "success" };
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // detectar específicamente el error de correo institucional
+      const emailError = error.errors.find((e) =>
+        e.message.includes("institucional")
+      );
+      if (emailError) {
+        return { status: "invalid_email" } as RegisterActionState;
+      }
       return { status: "invalid_data" };
     }
     return { status: "failed" };

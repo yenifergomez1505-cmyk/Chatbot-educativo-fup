@@ -121,6 +121,7 @@ export async function POST(request: Request) {
         userId: session.user.id,
         title: "New chat",
         visibility: selectedVisibilityType,
+        materia: materia ?? undefined,
       });
       titlePromise = generateTitleFromUserMessage({ message });
     }

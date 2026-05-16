@@ -1,8 +1,5 @@
-import {
-  recursoGuardado,
-} from "./schema";
+import { recursoGuardado } from "./schema";
 import "server-only";
-import { consultasSinRespuesta, calificacionesRespuesta } from "./schema";
 import {
   and,
   asc,
@@ -23,7 +20,9 @@ import { ChatbotError } from "../errors";
 import { generateUUID } from "../utils";
 import {
   type Chat,
+  calificacionesRespuesta,
   chat,
+  consultasSinRespuesta,
   type DBMessage,
   document,
   message,
@@ -51,7 +50,6 @@ export async function getUser(email: string): Promise<User[]> {
   }
 }
 
-// ✅ CAMBIADO: ahora recibe role como tercer parámetro
 export async function createUser(
   email: string,
   password: string,
@@ -86,16 +84,19 @@ export async function createGuestUser() {
   }
 }
 
+// ✅ ACTUALIZADO: ahora recibe materia opcional
 export async function saveChat({
   id,
   userId,
   title,
   visibility,
+  materia,
 }: {
   id: string;
   userId: string;
   title: string;
   visibility: VisibilityType;
+  materia?: string;
 }) {
   try {
     return await db.insert(chat).values({
@@ -104,6 +105,7 @@ export async function saveChat({
       userId,
       title,
       visibility,
+      materia: materia ?? null,
     });
   } catch (_error) {
     throw new ChatbotError("bad_request:database", "Failed to save chat");
@@ -242,7 +244,6 @@ export async function getChatById({ id }: { id: string }) {
     if (!selectedChat) {
       return null;
     }
-
     return selectedChat;
   } catch (_error) {
     throw new ChatbotError("bad_request:database", "Failed to get chat by id");
@@ -384,9 +385,7 @@ export async function updateDocumentContent({
       .where(and(eq(document.id, id), eq(document.createdAt, latest.createdAt)))
       .returning();
   } catch (_error) {
-    if (_error instanceof ChatbotError) {
-      throw _error;
-    }
+    if (_error instanceof ChatbotError) throw _error;
     throw new ChatbotError(
       "bad_request:database",
       "Failed to update document content"
@@ -396,13 +395,11 @@ export async function updateDocumentContent({
 
 export async function getDocumentsById({ id }: { id: string }) {
   try {
-    const documents = await db
+    return await db
       .select()
       .from(document)
       .where(eq(document.id, id))
       .orderBy(asc(document.createdAt));
-
-    return documents;
   } catch (_error) {
     throw new ChatbotError(
       "bad_request:database",
@@ -418,7 +415,6 @@ export async function getDocumentById({ id }: { id: string }) {
       .from(document)
       .where(eq(document.id, id))
       .orderBy(desc(document.createdAt));
-
     return selectedDocument;
   } catch (_error) {
     throw new ChatbotError(
@@ -516,9 +512,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
         and(eq(message.chatId, chatId), gte(message.createdAt, timestamp))
       );
 
-    const messageIds = messagesToDelete.map(
-      (currentMessage) => currentMessage.id
-    );
+    const messageIds = messagesToDelete.map((m) => m.id);
 
     if (messageIds.length > 0) {
       await db
@@ -728,10 +722,5 @@ export async function getRecursosByUserId(userId: string) {
 export async function deleteRecurso(id: string, userId: string) {
   return await db
     .delete(recursoGuardado)
-    .where(
-      and(
-        eq(recursoGuardado.id, id),
-        eq(recursoGuardado.userId, userId)
-      )
-    );
+    .where(and(eq(recursoGuardado.id, id), eq(recursoGuardado.userId, userId)));
 }

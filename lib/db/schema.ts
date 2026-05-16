@@ -42,6 +42,8 @@ export const chat = pgTable("Chat", {
   visibility: varchar("visibility", { enum: ["public", "private"] })
     .notNull()
     .default("private"),
+  // ✅ NUEVO: materia asociada al chat
+  materia: varchar("materia", { length: 50 }),
 });
 
 export type Chat = InferSelectModel<typeof chat>;
@@ -142,7 +144,7 @@ export const stream = pgTable(
 
 export type Stream = InferSelectModel<typeof stream>;
 
-// ✅ NUEVO: tabla para tokens de recuperación de contraseña
+// ✅ Tabla para tokens de recuperación de contraseña
 export const passwordResetToken = pgTable("PasswordResetToken", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   userId: uuid("userId")
@@ -182,7 +184,9 @@ export const calificacionesRespuesta = pgTable("calificaciones_respuesta", {
 // ── Módulo 4: Recursos guardados por el estudiante ──
 export const recursoGuardado = pgTable("recursos_guardados", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().references(() => user.id),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => user.id),
   chatId: text("chat_id").notNull(),
   messageId: text("message_id").notNull(),
   contenido: text("contenido").notNull(),

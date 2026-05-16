@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState, startTransition } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 import { toast } from "@/components/chat/toast";
 import { type RegisterActionState, register } from "../actions";
 
@@ -27,6 +27,12 @@ export default function Page() {
         type: "error",
         description:
           "Revisa el correo y que la contraseña tenga mínimo 6 caracteres.",
+      });
+      //  mensaje para correo no institucional
+    } else if (state.status === "invalid_email") {
+      toast({
+        type: "error",
+        description: "Debes usar tu correo institucional (@fup.edu.co)",
       });
     } else if (state.status === "success") {
       toast({ type: "success", description: "¡Cuenta creada exitosamente!" });
@@ -83,10 +89,14 @@ export default function Page() {
             defaultValue={email}
             id="email"
             name="email"
-            placeholder="jperez@fup.edu.co"
+            placeholder="@fup.edu.co"
             required
             type="email"
           />
+          {/*  hint debajo del campo */}
+          <p className="mt-1 text-[10px] text-edubot-light">
+            Solo se permiten correos @fup.edu.co
+          </p>
         </div>
 
         <div>
