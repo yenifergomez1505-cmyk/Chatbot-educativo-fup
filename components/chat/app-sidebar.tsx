@@ -5,6 +5,7 @@ import {
   PanelLeftIcon,
   PenSquareIcon,
   TrashIcon,
+  UserCircleIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -117,6 +118,21 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     <span className="font-medium">Nuevo chat</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {user && (
+  <SidebarMenuItem>
+    <SidebarMenuButton
+      className="h-8 rounded-lg text-[13px] text-sidebar-foreground/70 transition-colors duration-150 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+      onClick={() => {
+        setOpenMobile(false);
+        router.push("/perfil");
+      }}
+      tooltip="Mi perfil"
+    >
+      <UserCircleIcon className="size-4" />
+      <span className="font-medium">Mi perfil</span>
+    </SidebarMenuButton>
+  </SidebarMenuItem>
+)}
                 {user && (
                   <SidebarMenuItem>
                     <SidebarMenuButton
