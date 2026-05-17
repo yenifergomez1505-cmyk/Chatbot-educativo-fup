@@ -284,7 +284,7 @@ export async function POST(request: Request) {
               });
             }
           }
-        } else if (finishedMessages.length > 0) {
+         } else if (finishedMessages.length > 0) {
           await saveMessages({
             messages: finishedMessages.map((currentMessage) => ({
               id: currentMessage.id,
@@ -296,7 +296,24 @@ export async function POST(request: Request) {
             })),
           });
         }
+
+        // Guardar estadísticas por materia
+        if (materia && message?.role === "user") {
+          try {
+            const { saveCalificacion } = await import("@/lib/db/queries");
+            await saveCalificacion({
+              chatId: id,
+              userId: session.user.id,
+              messageId: message.id,
+              util: true,
+              materia,
+            });
+          } catch (e) {
+            console.error("Error guardando estadística:", e);
+          }
+        }
       },
+      
       onError: (error) => {
         if (
           error instanceof Error &&

@@ -6,6 +6,7 @@ import {
   MessageSquareIcon,
   PanelLeftIcon,
   PenSquareIcon,
+  ShieldIcon,
   TrashIcon,
   UserCircleIcon,
 } from "lucide-react";
@@ -47,7 +48,13 @@ import {
 } from "../ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
-export function AppSidebar({ user }: { user: User | undefined }) {
+export function AppSidebar({
+  user,
+  role,
+}: {
+  user: User | undefined;
+  role?: string;
+}) {
   const router = useRouter();
   const { setOpenMobile, toggleSidebar } = useSidebar();
   const { mutate } = useSWRConfig();
@@ -169,6 +176,23 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     >
                       <BookmarkIcon className="size-4" />
                       <span className="font-medium">Mis recursos</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+
+                {/* Panel Admin — solo para administradores */}
+                {user && role === "administrador" && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      className="h-8 rounded-lg text-[13px] text-sidebar-foreground/70 transition-colors duration-150 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      onClick={() => {
+                        setOpenMobile(false);
+                        router.push("/admin");
+                      }}
+                      tooltip="Panel Admin"
+                    >
+                      <ShieldIcon className="size-4" />
+                      <span className="font-medium">Panel Admin</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )}
