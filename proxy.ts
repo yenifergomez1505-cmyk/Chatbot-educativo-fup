@@ -23,19 +23,46 @@ export async function proxy(request: NextRequest) {
 
   if (!token) {
     const redirectUrl = encodeURIComponent(new URL(request.url).pathname);
-
     return NextResponse.redirect(
       new URL(`${base}/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
     );
   }
 
   const isGuest = guestRegex.test(token?.email ?? "");
+  const role = typeof token?.role === "string" ? token.role : "estudiante";
+  const nombre = typeof token?.name === "string" ? token.name : "";
 
   if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
     return NextResponse.redirect(new URL(`${base}/`, request.url));
   }
 
-  return NextResponse.next();
+  // Redirigir docente a su panel cuando va a la raíz
+  if (pathname === "/" && !isGuest && role === "docente") {
+    return NextResponse.redirect(new URL(`${base}/docente`, request.url));
+  }
+
+  if (
+    pathname.startsWith("/docente") &&
+    role !== "docente" &&
+    role !== "administrador"
+  ) {
+    return NextResponse.redirect(new URL(`${base}/`, request.url));
+  }
+
+  if (pathname.startsWith("/admin") && role !== "administrador") {
+    return NextResponse.redirect(new URL(`${base}/`, request.url));
+  }
+
+  // Pasar datos del usuario por headers para evitar await auth() en layouts
+  const response = NextResponse.next();
+  response.headers.set("x-user-role", role);
+  response.headers.set("x-user-name", nombre);
+  response.headers.set(
+    "x-user-id",
+    typeof token?.id === "string" ? token.id : ""
+  );
+
+  return response;
 }
 
 export const config = {
@@ -45,7 +72,6 @@ export const config = {
     "/api/:path*",
     "/login",
     "/register",
-
     "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
 };
