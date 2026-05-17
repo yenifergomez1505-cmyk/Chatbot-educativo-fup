@@ -57,6 +57,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [respuesta, setRespuesta] = useState<Record<string, string>>({});
   const [editando, setEditando] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroRol, setFiltroRol] = useState("todos");
   const [showCrear, setShowCrear] = useState(false);
   const [nuevoUsuario, setNuevoUsuario] = useState({
     email: "",
@@ -184,6 +186,14 @@ if (!confirm("¿Eliminar este usuario?")) {
   const totalConsultas = estadisticas?.totalConsultas ?? 0;
   const sinResponder = estadisticas?.consultasSinResponder ?? 0;
 
+  const usuariosFiltrados = usuarios.filter((u) => {
+    const coincideBusqueda =
+      (u.name ?? "").toLowerCase().includes(busqueda.toLowerCase()) ||
+      u.email.toLowerCase().includes(busqueda.toLowerCase());
+    const coincideRol = filtroRol === "todos" || u.role === filtroRol;
+    return coincideBusqueda && coincideRol;
+  });
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-background">
       {/* Header */}
@@ -265,17 +275,41 @@ if (!confirm("¿Eliminar este usuario?")) {
               {/* TAB USUARIOS */}
               {tab === "usuarios" && (
                 <div className="bg-white dark:bg-card rounded-xl border border-border shadow-sm">
-                  <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                    <h2 className="font-semibold text-sm">
-                      Gestión de usuarios
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={() => setShowCrear(true)}
-                      className="text-xs px-3 py-1.5 rounded-lg bg-[#1a3a5c] text-white font-medium hover:opacity-90"
-                    >
-                      + Agregar
-                    </button>
+                  <div className="px-5 py-4 border-b border-border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h2 className="font-semibold text-sm">
+                        Gestión de usuarios
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => setShowCrear(true)}
+                        className="text-xs px-3 py-1.5 rounded-lg bg-[#1a3a5c] text-white font-medium hover:opacity-90"
+                      >
+                        + Agregar
+                      </button>
+                    </div>
+                    <div className="flex gap-3">
+                      <input
+                        type="text"
+                        placeholder="Buscar por nombre o correo..."
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                        className="flex-1 text-sm border border-input rounded-lg px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/30"
+                      />
+                      <select
+                        value={filtroRol}
+                        onChange={(e) => setFiltroRol(e.target.value)}
+                        className="text-sm border border-input rounded-lg px-3 py-1.5 bg-background focus:outline-none"
+                      >
+                        <option value="todos">Todos los roles</option>
+                        <option value="estudiante">Estudiante</option>
+                        <option value="docente">Docente</option>
+                        <option value="administrador">Administrador</option>
+                      </select>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {usuariosFiltrados.length} de {usuarios.length} usuarios
+                    </p>
                   </div>
                   <table className="w-full">
                     <thead>
@@ -298,7 +332,7 @@ if (!confirm("¿Eliminar este usuario?")) {
                       </tr>
                     </thead>
                     <tbody>
-                      {usuarios.map((u) => (
+                      {usuariosFiltrados.map((u) => (
                         <tr
                           key={u.id}
                           className="border-b border-border last:border-0 hover:bg-gray-50 dark:hover:bg-muted/20"

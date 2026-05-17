@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -28,7 +29,7 @@ export default function PerfilPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/perfil")
+    fetch("/api/auth/perfil")
       .then((r) => r.json())
       .then((data) => {
         setPerfil(data);
@@ -44,13 +45,13 @@ export default function PerfilPage() {
 
   const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
+    if (!file) {
+      return;
+    }
     if (file.size > 2 * 1024 * 1024) {
       toast.error("La imagen no puede superar 2MB");
       return;
     }
-
     const reader = new FileReader();
     reader.onload = () => setPreview(reader.result as string);
     reader.readAsDataURL(file);
@@ -61,41 +62,37 @@ export default function PerfilPage() {
       toast.error("Las contraseñas no coinciden");
       return;
     }
-
     if (form.password && !form.currentPassword) {
       toast.error("Debes ingresar tu contraseña actual");
       return;
     }
-
     setSaving(true);
-
     try {
       const body: Record<string, string> = { name: form.name };
-
       if (preview && preview !== perfil.image) {
         body.image = preview;
       }
-
       if (form.password) {
         body.password = form.password;
         body.currentPassword = form.currentPassword;
       }
-
-      const res = await fetch("/api/perfil", {
+      const res = await fetch("/api/auth/perfil", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         toast.error(data.error ?? "Error al guardar");
         return;
       }
-
       toast.success("Perfil actualizado correctamente");
-      setForm((f) => ({ ...f, currentPassword: "", password: "", confirmPassword: "" }));
+      setForm((f) => ({
+        ...f,
+        currentPassword: "",
+        password: "",
+        confirmPassword: "",
+      }));
       setPerfil((p) => ({ ...p, name: form.name, image: preview ?? p.image }));
     } catch {
       toast.error("Error al guardar el perfil");
@@ -113,12 +110,16 @@ export default function PerfilPage() {
   }
 
   const iniciales = perfil.name
-    ? perfil.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    ? perfil.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
     : "??";
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="bg-primary px-6 py-4 flex items-center gap-3">
         <button
           type="button"
@@ -127,17 +128,20 @@ export default function PerfilPage() {
         >
           <ArrowLeftIcon className="size-5" />
         </button>
-        <h1 className="text-primary-foreground font-semibold text-lg">Mi Perfil</h1>
+        <h1 className="text-primary-foreground font-semibold text-lg">
+          Mi Perfil
+        </h1>
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-8 space-y-6">
-        {/* Foto de perfil */}
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
             {preview ? (
-              <img
+              <Image
                 src={preview}
                 alt="Foto de perfil"
+                width={96}
+                height={96}
                 className="size-24 rounded-full object-cover border-4 border-primary/20"
               />
             ) : (
@@ -175,11 +179,16 @@ export default function PerfilPage() {
           </span>
         </div>
 
-        {/* Formulario */}
         <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Nombre completo</label>
+            <label
+              htmlFor="nombre"
+              className="text-sm font-medium text-foreground"
+            >
+              Nombre completo
+            </label>
             <input
+              id="nombre"
               type="text"
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -189,47 +198,81 @@ export default function PerfilPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Correo institucional</label>
+            <label
+              htmlFor="correo"
+              className="text-sm font-medium text-foreground"
+            >
+              Correo institucional
+            </label>
             <input
+              id="correo"
               type="email"
               value={perfil.email}
               disabled
               className="w-full rounded-xl border border-input bg-muted px-4 py-2.5 text-sm text-muted-foreground cursor-not-allowed"
             />
-            <p className="text-xs text-muted-foreground">El correo no se puede cambiar.</p>
+            <p className="text-xs text-muted-foreground">
+              El correo no se puede cambiar.
+            </p>
           </div>
 
           <div className="border-t border-border pt-4 space-y-3">
-            <p className="text-sm font-medium text-foreground">Cambiar contraseña</p>
+            <p className="text-sm font-medium text-foreground">
+              Cambiar contraseña
+            </p>
 
             <div className="space-y-1.5">
-              <label className="text-sm text-muted-foreground">Contraseña actual</label>
+              <label
+                htmlFor="currentPassword"
+                className="text-sm text-muted-foreground"
+              >
+                Contraseña actual
+              </label>
               <input
+                id="currentPassword"
                 type="password"
                 value={form.currentPassword}
-                onChange={(e) => setForm((f) => ({ ...f, currentPassword: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, currentPassword: e.target.value }))
+                }
                 className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 placeholder="••••••••"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm text-muted-foreground">Nueva contraseña</label>
+              <label
+                htmlFor="password"
+                className="text-sm text-muted-foreground"
+              >
+                Nueva contraseña
+              </label>
               <input
+                id="password"
                 type="password"
                 value={form.password}
-                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, password: e.target.value }))
+                }
                 className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 placeholder="••••••••"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm text-muted-foreground">Confirmar nueva contraseña</label>
+              <label
+                htmlFor="confirmPassword"
+                className="text-sm text-muted-foreground"
+              >
+                Confirmar nueva contraseña
+              </label>
               <input
+                id="confirmPassword"
                 type="password"
                 value={form.confirmPassword}
-                onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, confirmPassword: e.target.value }))
+                }
                 className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 placeholder="••••••••"
               />
@@ -237,7 +280,6 @@ export default function PerfilPage() {
           </div>
         </div>
 
-        {/* Botón guardar */}
         <button
           type="button"
           onClick={handleGuardar}

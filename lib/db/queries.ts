@@ -726,6 +726,7 @@ export async function deleteRecurso(id: string, userId: string) {
 // MÓDULO 5 — Administración del sistema
 
 // ── Obtener todos los usuarios ──
+// DESPUÉS:
 export async function getAllUsers() {
   try {
     return await db
@@ -734,6 +735,7 @@ export async function getAllUsers() {
         email: user.email,
         name: user.name,
         role: user.role,
+        createdAt: user.createdAt, // ← agregar esta línea
       })
       .from(user)
       .orderBy(asc(user.email));

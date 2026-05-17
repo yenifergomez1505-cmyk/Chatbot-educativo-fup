@@ -150,8 +150,9 @@ type MateriaId = (typeof MATERIAS)[number]["id"];
 export default function MateriasPage() {
   const router = useRouter();
   const [materiaActiva, setMateriaActiva] = useState<MateriaId>(MATERIAS[0].id);
+// biome-ignore lint/style/noNonNullAssertion: materia siempre existe
+const materia = MATERIAS.find((m) => m.id === materiaActiva)!;
 
-  const materia = MATERIAS.find((m) => m.id === materiaActiva)!;
 
   const handlePreguntarTema = (titulo: string) => {
     const pregunta = `Explícame el tema "${titulo}" con ejemplos en código Java`;
