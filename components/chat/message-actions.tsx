@@ -1,5 +1,5 @@
 import equal from "fast-deep-equal";
-import { BookmarkIcon } from "lucide-react";
+import { BookmarkIcon, HelpCircleIcon } from "lucide-react";
 import { memo } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
@@ -50,11 +50,8 @@ export function PureMessageActions({
       toast.error("No hay contenido para guardar");
       return;
     }
-
-    // Obtener la materia desde la URL
     const params = new URLSearchParams(window.location.search);
     const materia = params.get("materia") ?? "sin-materia";
-
     try {
       const res = await fetch("/api/auth/recursos", {
         method: "POST",
@@ -66,11 +63,32 @@ export function PureMessageActions({
           materia,
         }),
       });
-
       if (!res.ok) throw new Error("Error al guardar");
       toast.success("Respuesta guardada en Mis recursos");
     } catch {
       toast.error("Error al guardar el recurso");
+    }
+  };
+
+  const handlePedirAyuda = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const materia = params.get("materia") ?? "sin-materia";
+    const preguntaUsuario = textFromParts ?? "Pregunta sin texto";
+    try {
+      const res = await fetch("/api/auth/consultas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chatId,
+          messageId: message.id,
+          pregunta: preguntaUsuario,
+          materia,
+        }),
+      });
+      if (!res.ok) throw new Error("Error al enviar");
+      toast.success("Consulta enviada al docente ✅");
+    } catch {
+      toast.error("Error al enviar la consulta al docente");
     }
   };
 
@@ -111,13 +129,22 @@ export function PureMessageActions({
         <CopyIcon />
       </Action>
 
-      {/* ✅ NUEVO: Guardar respuesta */}
+      {/* Guardar respuesta */}
       <Action
         className="text-muted-foreground/50 hover:text-edubot-primary"
         onClick={handleGuardar}
         tooltip="Guardar en Mis recursos"
       >
         <BookmarkIcon className="size-4" />
+      </Action>
+
+      {/* Pedir ayuda al docente */}
+      <Action
+        className="text-muted-foreground/50 hover:text-amber-500"
+        onClick={handlePedirAyuda}
+        tooltip="Pedir ayuda al docente"
+      >
+        <HelpCircleIcon className="size-4" />
       </Action>
 
       {/* Útil */}
@@ -137,7 +164,6 @@ export function PureMessageActions({
               }),
             }
           );
-
           toast.promise(upvote, {
             loading: "Votando...",
             success: () => {
@@ -182,7 +208,6 @@ export function PureMessageActions({
               }),
             }
           );
-
           toast.promise(downvote, {
             loading: "Votando...",
             success: () => {
