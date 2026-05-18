@@ -284,7 +284,7 @@ export async function POST(request: Request) {
               });
             }
           }
-         } else if (finishedMessages.length > 0) {
+        } else if (finishedMessages.length > 0) {
           await saveMessages({
             messages: finishedMessages.map((currentMessage) => ({
               id: currentMessage.id,
@@ -312,8 +312,43 @@ export async function POST(request: Request) {
             console.error("Error guardando estadística:", e);
           }
         }
+
+        // ✅ detectar cuando la IA no puede responder y guardar para el docente
+        if (materia && message?.role === "user") {
+          try {
+            const lastAssistantMsg = finishedMessages
+              .filter((m) => m.role === "assistant")
+              .at(-1);
+
+            const textContent = lastAssistantMsg?.parts
+              ?.filter((p: any) => p.type === "text")
+              .map((p: any) => p.text)
+              .join("")
+              .trim();
+
+            if (textContent?.startsWith("NO_PUEDO_RESPONDER:")) {
+              const { saveConsultaSinRespuesta } = await import(
+                "@/lib/db/queries"
+              );
+              const pregunta = message.parts
+                ?.filter((p: any) => p.type === "text")
+                .map((p: any) => p.text)
+                .join("")
+                .trim();
+
+              await saveConsultaSinRespuesta({
+                chatId: id,
+                userId: session.user.id,
+                pregunta: pregunta ?? "Pregunta sin texto",
+                materia,
+              });
+            }
+          } catch (e) {
+            console.error("Error guardando consulta sin respuesta:", e);
+          }
+        }
       },
-      
+
       onError: (error) => {
         if (
           error instanceof Error &&

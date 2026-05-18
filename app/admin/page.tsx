@@ -4,6 +4,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { LogOutIcon } from "lucide-react";
+import { signOut } from "next-auth/react";
 import {
   UsersIcon,
   BarChartIcon,
@@ -50,7 +52,7 @@ type Tab = "usuarios" | "estadisticas" | "consultas";
 
 export default function AdminPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("usuarios");
+  const [tab, setTab] = useState<Tab>("estadisticas");
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [estadisticas, setEstadisticas] = useState<Estadisticas | null>(null);
   const [consultas, setConsultas] = useState<Consulta[]>([]);
@@ -218,6 +220,7 @@ if (!confirm("¿Eliminar este usuario?")) {
 
       <div className="flex min-h-[calc(100vh-60px)]">
         {/* Sidebar */}
+  {/* Sidebar */}
         <div className="w-44 bg-[#1a3a5c] flex flex-col pt-4">
           <div className="px-4 pb-4 border-b border-white/10">
             <p className="text-white font-semibold text-sm">Panel Admin</p>
@@ -242,7 +245,27 @@ if (!confirm("¿Eliminar este usuario?")) {
               {label}
             </button>
           ))}
+
+          {/* Cerrar sesión al fondo */}
+          <div className="mt-auto border-t border-white/10 p-4">
+            <div className="flex items-center gap-3">
+              <div className="size-8 rounded-full bg-[#2563a8] flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                AF
+              </div>
+              <div>
+                <p className="text-white text-xs font-semibold">Administrador</p>
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="text-white/50 text-xs hover:text-white transition-colors"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
+        {/* FIN Sidebar */}
 
         {/* Main content */}
         <div className="flex-1 p-6">
