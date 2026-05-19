@@ -4,7 +4,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { LogOutIcon } from "lucide-react";
 import { signOut } from "next-auth/react";
 import {
   UsersIcon,

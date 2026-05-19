@@ -31,7 +31,9 @@ function emailToHue(email: string): number {
 
 // ✅ NUEVO: etiqueta de rol
 function RoleBadge({ role }: { role?: string }) {
-  if (!role) return null;
+  if (!role) {
+    return null;
+  }
   const labels: Record<string, string> = {
     estudiante: " Estudiante",
     docente: "Docente",
@@ -125,7 +127,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                   if (isGuest) {
                     router.push("/login");
                   } else {
-                    signOut({ redirectTo: "/" });
+                    signOut({ redirectTo: "/landing" });
                   }
                 }}
                 type="button"

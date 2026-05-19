@@ -502,3 +502,96 @@ textarea:focus-visible {
 [data-testid="artifact"] {
   isolation: isolate;
 }
+/* ============================================================
+   AUTH IDEA 3 — pega al FINAL de globals.css
+   ============================================================ */
+
+  /* Labels */
+  .text-edubot-primary {
+  color: #0f4c8a !important;
+}
+
+.text-edubot-medium {
+  color: #5a7a99 !important;
+}
+
+.text-edubot-dark {
+  color: #0a1f3d !important;
+}
+
+.text-edubot-light {
+  color: #aabbcc !important;
+}
+
+/* Inputs */
+  .bg-edubot-input {
+  background: #f0f6ff !important;
+}
+
+.border-edubot-light {
+  border-color: #c8dff2 !important;
+}
+
+input.bg-edubot-input {
+  color: #0a1f3d !important;
+  border-radius: 8px !important;
+  border: 1.5px solid #c8dff2 !important;
+}
+
+input.bg-edubot-input::placeholder {
+  color: #aabbcc !important;
+}
+
+input.bg-edubot-input:focus {
+  border-color: #0f4c8a !important;
+  box-shadow: 0 0 0 3px rgba(15, 76, 138, 0.08) !important;
+  outline: none !important;
+}
+
+/* Botón principal */
+  .bg-edubot-primary {
+  background: linear-gradient(135deg, #00c2ff, #0a1f3d) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 16px rgba(0, 194, 255, 0.25) !important;
+  transition:
+    opacity 0.2s,
+    transform 0.2s !important;
+}
+
+.bg-edubot-primary:hover:not(:disabled) {
+  opacity: 0.9 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Botones de rol seleccionado */
+  .bg-edubot-bg {
+  background: #e8f3fc !important;
+  border-color: #0f4c8a !important;
+  color: #0a1f3d !important;
+  font-weight: 600 !important;
+}
+
+/* Botones de rol no seleccionado */
+  button.border-edubot-light {
+  background: #f0f6ff !important;
+  color: #5a7a99 !important;
+}
+
+/* Links */
+  a.text-edubot-primary {
+  color: #0f4c8a !important;
+  font-weight: 600 !important;
+}
+
+a.text-edubot-primary:hover {
+  color: #00c2ff !important;
+}
+
+/* Olvidaste contraseña */
+.text-right
+a {
+  color: #1a6ab5 !important;
+}
+ 

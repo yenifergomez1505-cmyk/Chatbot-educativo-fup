@@ -8,6 +8,7 @@ export const authConfig = {
   pages: {
     signIn: `${base}/login`,
     newUser: `${base}/`,
+    signOut: `${base}/landing`,
   },
   providers: [],
   callbacks: {
@@ -16,12 +17,6 @@ export const authConfig = {
       const role = (auth?.user as { role?: string })?.role ?? "estudiante";
       const path = nextUrl.pathname;
 
-      // Redirigir docente a su panel cuando va a la raíz
-      if (path === "/" && isLoggedIn && role === "docente") {
-        return Response.redirect(new URL(`${base}/docente`, nextUrl));
-      }
-
-      // Proteger rutas de docente
       if (path.startsWith("/docente")) {
         if (!isLoggedIn) {
           return Response.redirect(new URL(`${base}/login`, nextUrl));
@@ -32,7 +27,6 @@ export const authConfig = {
         return true;
       }
 
-      // Proteger rutas de admin
       if (path.startsWith("/admin")) {
         if (!isLoggedIn) {
           return Response.redirect(new URL(`${base}/login`, nextUrl));

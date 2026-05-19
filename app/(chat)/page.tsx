@@ -5,7 +5,7 @@ export default async function Page() {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/login");
+    redirect("/landing");
   }
 
   const role = (session.user as { role?: string })?.role ?? "estudiante";
