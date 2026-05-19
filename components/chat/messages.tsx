@@ -77,34 +77,48 @@ function PureMessages({
         style={isArtifactVisible ? { scrollbarWidth: "none" } : undefined}
       >
         <div className="mx-auto flex min-h-full min-w-0 max-w-4xl flex-col gap-5 px-2 py-6 md:gap-7 md:px-4">
-          {messages.map((message, index) => (
-            <PreviewMessage
-              addToolApprovalResponse={addToolApprovalResponse}
-              chatId={chatId}
-              isLoading={
-                status === "streaming" && messages.length - 1 === index
-              }
-              isReadonly={isReadonly}
-              key={message.id}
-              message={message}
-              onEdit={onEditMessage}
-              regenerate={regenerate}
-              requiresScrollPadding={
-                hasSentMessage && index === messages.length - 1
-              }
-              setMessages={setMessages}
-              vote={
-                votes
-                  ? votes.find((vote) => vote.messageId === message.id)
-                  : undefined
-              }
-            />
-          ))}
+          {messages.map((message, index) => {
+            const preguntaUsuario =
+              message.role === "assistant"
+                ? messages
+                    .slice(0, index)
+                    .filter((m) => m.role === "user")
+                    .at(-1)
+                    ?.parts?.filter((p) => p.type === "text")
+                    .map((p) => (p as { type: "text"; text: string }).text)
+                    .join(" ")
+                    .trim()
+                : undefined;
 
-          {status === "submitted" &&
-            messages.at(-1)?.role !== "assistant" && (
-              <ThinkingMessage />
-            )}
+            return (
+              <PreviewMessage
+                addToolApprovalResponse={addToolApprovalResponse}
+                chatId={chatId}
+                isLoading={
+                  status === "streaming" && messages.length - 1 === index
+                }
+                isReadonly={isReadonly}
+                key={message.id}
+                message={message}
+                onEdit={onEditMessage}
+                preguntaUsuario={preguntaUsuario}
+                regenerate={regenerate}
+                requiresScrollPadding={
+                  hasSentMessage && index === messages.length - 1
+                }
+                setMessages={setMessages}
+                vote={
+                  votes
+                    ? votes.find((vote) => vote.messageId === message.id)
+                    : undefined
+                }
+              />
+            );
+          })}
+
+          {status === "submitted" && messages.at(-1)?.role !== "assistant" && (
+            <ThinkingMessage />
+          )}
 
           <div
             className="min-h-[24px] min-w-[24px] shrink-0"

@@ -3,9 +3,11 @@
 import {
   BookmarkIcon,
   BookOpenIcon,
+  GraduationCapIcon,
   MessageSquareIcon,
   PanelLeftIcon,
   PenSquareIcon,
+  ShieldIcon,
   TrashIcon,
   UserCircleIcon,
 } from "lucide-react";
@@ -47,7 +49,13 @@ import {
 } from "../ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
-export function AppSidebar({ user }: { user: User | undefined }) {
+export function AppSidebar({
+  user,
+  role,
+}: {
+  user: User | undefined;
+  role?: string;
+}) {
   const router = useRouter();
   const { setOpenMobile, toggleSidebar } = useSidebar();
   const { mutate } = useSWRConfig();
@@ -122,7 +130,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
-                {/* NUEVO: Índice temático */}
+                {/* Índice temático */}
                 {user && (
                   <SidebarMenuItem>
                     <SidebarMenuButton
@@ -169,6 +177,59 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     >
                       <BookmarkIcon className="size-4" />
                       <span className="font-medium">Mis recursos</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+
+                {/* Respuestas del docente — solo para estudiantes */}
+                {user && role === "estudiante" && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      className="h-8 rounded-lg text-[13px] text-sidebar-foreground/70 transition-colors duration-150 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      onClick={() => {
+                        setOpenMobile(false);
+                        router.push("/respuestas-docente");
+                      }}
+                      tooltip="Respuestas del docente"
+                    >
+                      <GraduationCapIcon className="size-4" />
+                      <span className="font-medium">
+                        Respuestas del docente
+                      </span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+
+                {/* Panel Docente — solo para docentes */}
+                {user && role === "docente" && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      className="h-8 rounded-lg text-[13px] text-sidebar-foreground/70 transition-colors duration-150 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      onClick={() => {
+                        setOpenMobile(false);
+                        router.push("/docente");
+                      }}
+                      tooltip="Panel Docente"
+                    >
+                      <BookOpenIcon className="size-4" />
+                      <span className="font-medium">Panel Docente</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+
+                {/* Panel Admin — solo para administradores */}
+                {user && role === "administrador" && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      className="h-8 rounded-lg text-[13px] text-sidebar-foreground/70 transition-colors duration-150 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      onClick={() => {
+                        setOpenMobile(false);
+                        router.push("/admin");
+                      }}
+                      tooltip="Panel Admin"
+                    >
+                      <ShieldIcon className="size-4" />
+                      <span className="font-medium">Panel Admin</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )}

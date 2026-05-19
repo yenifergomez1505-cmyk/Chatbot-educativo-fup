@@ -32,6 +32,7 @@ const PurePreviewMessage = ({
   isReadonly,
   requiresScrollPadding: _requiresScrollPadding,
   onEdit,
+  preguntaUsuario,
 }: {
   addToolApprovalResponse: UseChatHelpers<ChatMessage>["addToolApprovalResponse"];
   chatId: string;
@@ -43,6 +44,7 @@ const PurePreviewMessage = ({
   isReadonly: boolean;
   requiresScrollPadding: boolean;
   onEdit?: (message: ChatMessage) => void;
+  preguntaUsuario?: string;
 }) => {
   const attachmentsFromMessage = message.parts.filter(
     (part) => part.type === "file"
@@ -311,6 +313,7 @@ const PurePreviewMessage = ({
       key={`action-${message.id}`}
       message={message}
       onEdit={onEdit ? () => onEdit(message) : undefined}
+      preguntaUsuario={preguntaUsuario}
       vote={vote}
     />
   );

@@ -1,4 +1,5 @@
 import type { InferSelectModel } from "drizzle-orm";
+export type RecursoGuardado = InferSelectModel<typeof recursoGuardado>;
 import {
   boolean,
   foreignKey,
@@ -181,18 +182,14 @@ export const calificacionesRespuesta = pgTable("calificaciones_respuesta", {
   creadoEn: timestamp("creado_en").defaultNow().notNull(),
 });
 
-// ── Módulo 4: Recursos guardados por el estudiante ──
-export const recursoGuardado = pgTable("recursos_guardados", {
+// ── Módulo 4: Recursos guardados ──
+export const recursoGuardado = pgTable("recurso_guardado", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")
     .notNull()
     .references(() => user.id),
-  chatId: text("chat_id").notNull(),
-  messageId: text("message_id").notNull(),
-  contenido: text("contenido").notNull(),
-  materia: text("materia").notNull(),
-  etiqueta: text("etiqueta"),
+  titulo: text("titulo").notNull(),
+  descripcion: text("descripcion"),
+  url: text("url"),
   creadoEn: timestamp("creado_en").defaultNow().notNull(),
 });
-
-export type RecursoGuardado = typeof recursoGuardado.$inferSelect;

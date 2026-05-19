@@ -296,9 +296,6 @@ export async function POST(request: Request) {
             })),
           });
         }
-<<<<<<< Updated upstream
-      },
-=======
 
         // Guardar estadísticas por materia
         if (materia && message?.role === "user") {
@@ -352,7 +349,6 @@ export async function POST(request: Request) {
         }
       },
 
->>>>>>> Stashed changes
       onError: (error) => {
         if (
           error instanceof Error &&

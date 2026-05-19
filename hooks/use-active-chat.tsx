@@ -48,12 +48,13 @@ type ActiveChatContextValue = {
   showCreditCardAlert: boolean;
   setShowCreditCardAlert: Dispatch<SetStateAction<boolean>>;
 };
-
 const ActiveChatContext = createContext<ActiveChatContextValue | null>(null);
 
 function extractChatId(pathname: string): string | null {
   const match = pathname.match(/\/chat\/([^/]+)/);
-  return match ? match[1] : null;
+  const id = match ? match[1] : null;
+  if (!id || id === "new") return null;
+  return id;
 }
 
 export function ActiveChatProvider({ children }: { children: ReactNode }) {
@@ -65,6 +66,12 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
   const isNewChat = !chatIdFromUrl;
   const newChatIdRef = useRef(generateUUID());
   const prevPathnameRef = useRef(pathname);
+  const materiaRef = useRef<string | undefined>(
+    typeof window !== "undefined"
+      ? (new URLSearchParams(window.location.search).get("materia") ??
+          undefined)
+      : undefined
+  );
 
   if (isNewChat && prevPathnameRef.current !== pathname) {
     newChatIdRef.current = generateUUID();
@@ -139,8 +146,10 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
           );
 
         const params = new URLSearchParams(window.location.search);
+        const materiaFromUrl = params.get("materia") ?? undefined;
+        if (materiaFromUrl) materiaRef.current = materiaFromUrl;
         const materia =
-          params.get("materia") ?? (request.body as any)?.materia ?? undefined;
+          materiaRef.current ?? (request.body as any)?.materia ?? undefined;
 
         return {
           body: {

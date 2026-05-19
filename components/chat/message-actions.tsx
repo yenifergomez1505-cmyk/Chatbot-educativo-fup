@@ -18,12 +18,14 @@ export function PureMessageActions({
   vote,
   isLoading,
   onEdit,
+  preguntaUsuario,
 }: {
   chatId: string;
   message: ChatMessage;
   vote: Vote | undefined;
   isLoading: boolean;
   onEdit?: () => void;
+  preguntaUsuario?: string;
 }) {
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
@@ -73,7 +75,7 @@ export function PureMessageActions({
   const handlePedirAyuda = async () => {
     const params = new URLSearchParams(window.location.search);
     const materia = params.get("materia") ?? "sin-materia";
-    const preguntaUsuario = textFromParts ?? "Pregunta sin texto";
+    const pregunta = preguntaUsuario ?? textFromParts ?? "Pregunta sin texto";
     try {
       const res = await fetch("/api/auth/consultas", {
         method: "POST",
@@ -81,7 +83,7 @@ export function PureMessageActions({
         body: JSON.stringify({
           chatId,
           messageId: message.id,
-          pregunta: preguntaUsuario,
+          pregunta,
           materia,
         }),
       });
@@ -120,7 +122,6 @@ export function PureMessageActions({
 
   return (
     <Actions className="-ml-0.5 opacity-0 transition-opacity duration-150 group-hover/message:opacity-100">
-      {/* Copiar */}
       <Action
         className="text-muted-foreground/50 hover:text-foreground"
         onClick={handleCopy}
@@ -129,7 +130,6 @@ export function PureMessageActions({
         <CopyIcon />
       </Action>
 
-      {/* Guardar respuesta */}
       <Action
         className="text-muted-foreground/50 hover:text-edubot-primary"
         onClick={handleGuardar}
@@ -138,7 +138,6 @@ export function PureMessageActions({
         <BookmarkIcon className="size-4" />
       </Action>
 
-      {/* Pedir ayuda al docente */}
       <Action
         className="text-muted-foreground/50 hover:text-amber-500"
         onClick={handlePedirAyuda}
@@ -147,7 +146,6 @@ export function PureMessageActions({
         <HelpCircleIcon className="size-4" />
       </Action>
 
-      {/* Útil */}
       <Action
         className="text-muted-foreground/50 hover:text-foreground"
         data-testid="message-upvote"
@@ -191,7 +189,6 @@ export function PureMessageActions({
         <ThumbUpIcon />
       </Action>
 
-      {/* No útil */}
       <Action
         className="text-muted-foreground/50 hover:text-foreground"
         data-testid="message-downvote"

@@ -1,5 +1,6 @@
 import { recursoGuardado } from "./schema";
 import "server-only";
+
 import {
   and,
   asc,
@@ -57,7 +58,6 @@ export async function createUser(
   name?: string
 ) {
   const hashedPassword = generateHashedPassword(password);
-
   try {
     return await db
       .insert(user)
@@ -70,7 +70,6 @@ export async function createUser(
 export async function createGuestUser() {
   const email = `guest-${Date.now()}`;
   const password = generateHashedPassword(generateUUID());
-
   try {
     return await db.insert(user).values({ email, password }).returning({
       id: user.id,
@@ -84,7 +83,6 @@ export async function createGuestUser() {
   }
 }
 
-// ✅ ACTUALIZADO: ahora recibe materia opcional
 export async function saveChat({
   id,
   userId,
@@ -117,7 +115,6 @@ export async function deleteChatById({ id }: { id: string }) {
     await db.delete(vote).where(eq(vote.chatId, id));
     await db.delete(message).where(eq(message.chatId, id));
     await db.delete(stream).where(eq(stream.chatId, id));
-
     const [chatsDeleted] = await db
       .delete(chat)
       .where(eq(chat.id, id))
@@ -137,22 +134,15 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
       .select({ id: chat.id })
       .from(chat)
       .where(eq(chat.userId, userId));
-
-    if (userChats.length === 0) {
-      return { deletedCount: 0 };
-    }
-
+    if (userChats.length === 0) return { deletedCount: 0 };
     const chatIds = userChats.map((c) => c.id);
-
     await db.delete(vote).where(inArray(vote.chatId, chatIds));
     await db.delete(message).where(inArray(message.chatId, chatIds));
     await db.delete(stream).where(inArray(stream.chatId, chatIds));
-
     const deletedChats = await db
       .delete(chat)
       .where(eq(chat.userId, userId))
       .returning();
-
     return { deletedCount: deletedChats.length };
   } catch (_error) {
     throw new ChatbotError(
@@ -175,7 +165,6 @@ export async function getChatsByUserId({
 }) {
   try {
     const extendedLimit = limit + 1;
-
     const query = (whereCondition?: SQL<unknown>) =>
       db
         .select()
@@ -196,14 +185,11 @@ export async function getChatsByUserId({
         .from(chat)
         .where(eq(chat.id, startingAfter))
         .limit(1);
-
-      if (!selectedChat) {
+      if (!selectedChat)
         throw new ChatbotError(
           "not_found:database",
           `Chat with id ${startingAfter} not found`
         );
-      }
-
       filteredChats = await query(gt(chat.createdAt, selectedChat.createdAt));
     } else if (endingBefore) {
       const [selectedChat] = await db
@@ -211,21 +197,17 @@ export async function getChatsByUserId({
         .from(chat)
         .where(eq(chat.id, endingBefore))
         .limit(1);
-
-      if (!selectedChat) {
+      if (!selectedChat)
         throw new ChatbotError(
           "not_found:database",
           `Chat with id ${endingBefore} not found`
         );
-      }
-
       filteredChats = await query(lt(chat.createdAt, selectedChat.createdAt));
     } else {
       filteredChats = await query();
     }
 
     const hasMore = filteredChats.length > limit;
-
     return {
       chats: hasMore ? filteredChats.slice(0, limit) : filteredChats,
       hasMore,
@@ -241,9 +223,7 @@ export async function getChatsByUserId({
 export async function getChatById({ id }: { id: string }) {
   try {
     const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
-    if (!selectedChat) {
-      return null;
-    }
+    if (!selectedChat) return null;
     return selectedChat;
   } catch (_error) {
     throw new ChatbotError("bad_request:database", "Failed to get chat by id");
@@ -301,18 +281,15 @@ export async function voteMessage({
       .select()
       .from(vote)
       .where(and(eq(vote.messageId, messageId)));
-
     if (existingVote) {
       return await db
         .update(vote)
         .set({ isUpvoted: type === "up" })
         .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
     }
-    return await db.insert(vote).values({
-      chatId,
-      messageId,
-      isUpvoted: type === "up",
-    });
+    return await db
+      .insert(vote)
+      .values({ chatId, messageId, isUpvoted: type === "up" });
   } catch (_error) {
     throw new ChatbotError("bad_request:database", "Failed to vote message");
   }
@@ -345,14 +322,7 @@ export async function saveDocument({
   try {
     return await db
       .insert(document)
-      .values({
-        id,
-        title,
-        kind,
-        content,
-        userId,
-        createdAt: new Date(),
-      })
+      .values({ id, title, kind, content, userId, createdAt: new Date() })
       .returning();
   } catch (_error) {
     throw new ChatbotError("bad_request:database", "Failed to save document");
@@ -373,12 +343,9 @@ export async function updateDocumentContent({
       .where(eq(document.id, id))
       .orderBy(desc(document.createdAt))
       .limit(1);
-
     const latest = docs[0];
-    if (!latest) {
+    if (!latest)
       throw new ChatbotError("not_found:database", "Document not found");
-    }
-
     return await db
       .update(document)
       .set({ content })
@@ -440,7 +407,6 @@ export async function deleteDocumentsByIdAfterTimestamp({
           gt(suggestion.documentCreatedAt, timestamp)
         )
       );
-
     return await db
       .delete(document)
       .where(and(eq(document.id, id), gt(document.createdAt, timestamp)))
@@ -511,16 +477,13 @@ export async function deleteMessagesByChatIdAfterTimestamp({
       .where(
         and(eq(message.chatId, chatId), gte(message.createdAt, timestamp))
       );
-
     const messageIds = messagesToDelete.map((m) => m.id);
-
     if (messageIds.length > 0) {
       await db
         .delete(vote)
         .where(
           and(eq(vote.chatId, chatId), inArray(vote.messageId, messageIds))
         );
-
       return await db
         .delete(message)
         .where(
@@ -577,7 +540,6 @@ export async function getMessageCountByUserId({
     const cutoffTime = new Date(
       Date.now() - differenceInHours * 60 * 60 * 1000
     );
-
     const [stats] = await db
       .select({ count: count(message.id) })
       .from(message)
@@ -590,7 +552,6 @@ export async function getMessageCountByUserId({
         )
       )
       .execute();
-
     return stats?.count ?? 0;
   } catch (_error) {
     throw new ChatbotError(
@@ -627,7 +588,6 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
       .where(eq(stream.chatId, chatId))
       .orderBy(asc(stream.createdAt))
       .execute();
-
     return streamIds.map(({ id }) => id);
   } catch (_error) {
     throw new ChatbotError(
@@ -660,6 +620,28 @@ export async function saveConsultaSinRespuesta({
   });
 }
 
+// ✅ NUEVO: obtener consultas sin respuesta
+export async function getConsultasSinRespuesta(materia?: string) {
+  try {
+    const condicion = materia
+      ? and(
+          eq(consultasSinRespuesta.respondida, false),
+          eq(consultasSinRespuesta.materia, materia)
+        )
+      : eq(consultasSinRespuesta.respondida, false);
+    return await db
+      .select()
+      .from(consultasSinRespuesta)
+      .where(condicion)
+      .orderBy(desc(consultasSinRespuesta.creadoEn));
+  } catch (_error) {
+    throw new ChatbotError(
+      "bad_request:database",
+      "Failed to get consultas sin respuesta"
+    );
+  }
+}
+
 // ── Módulo 2: Calificaciones ──
 
 export async function saveCalificacion({
@@ -675,13 +657,9 @@ export async function saveCalificacion({
   chatId: string;
   userId: string;
 }) {
-  return await db.insert(calificacionesRespuesta).values({
-    messageId,
-    util,
-    materia,
-    chatId,
-    userId,
-  });
+  return await db
+    .insert(calificacionesRespuesta)
+    .values({ messageId, util, materia, chatId, userId });
 }
 
 // ── Módulo 4: Recursos guardados ──
@@ -723,4 +701,149 @@ export async function deleteRecurso(id: string, userId: string) {
   return await db
     .delete(recursoGuardado)
     .where(and(eq(recursoGuardado.id, id), eq(recursoGuardado.userId, userId)));
+}
+
+// ── Módulo 5: Administración ──
+
+export async function getAllUsers() {
+  try {
+    return await db
+      .select({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        createdAt: user.createdAt,
+      })
+      .from(user)
+      .orderBy(asc(user.email));
+  } catch (_error) {
+    throw new ChatbotError("bad_request:database", "Failed to get all users");
+  }
+}
+
+export async function updateUserRole(userId: string, role: UserRole) {
+  try {
+    return await db.update(user).set({ role }).where(eq(user.id, userId));
+  } catch (_error) {
+    throw new ChatbotError(
+      "bad_request:database",
+      "Failed to update user role"
+    );
+  }
+}
+
+export async function deleteUser(userId: string) {
+  try {
+    const userChats = await db
+      .select({ id: chat.id })
+      .from(chat)
+      .where(eq(chat.userId, userId));
+    const chatIds = userChats.map((c) => c.id);
+    if (chatIds.length > 0) {
+      await db.delete(vote).where(inArray(vote.chatId, chatIds));
+      await db.delete(message).where(inArray(message.chatId, chatIds));
+      await db.delete(stream).where(inArray(stream.chatId, chatIds));
+      await db.delete(chat).where(eq(chat.userId, userId));
+    }
+    await db.delete(recursoGuardado).where(eq(recursoGuardado.userId, userId));
+    await db
+      .delete(calificacionesRespuesta)
+      .where(eq(calificacionesRespuesta.userId, userId));
+    await db
+      .delete(consultasSinRespuesta)
+      .where(eq(consultasSinRespuesta.userId, userId));
+    return await db.delete(user).where(eq(user.id, userId));
+  } catch (_error) {
+    throw new ChatbotError("bad_request:database", "Failed to delete user");
+  }
+}
+
+export async function getEstadisticas() {
+  try {
+    const [totalUsuariosResult] = await db
+      .select({ total: count(user.id) })
+      .from(user);
+    const [totalConsultasResult] = await db
+      .select({ total: count(message.id) })
+      .from(message)
+      .where(eq(message.role, "user"));
+    const [promedioResult] = await db
+      .select({ total: count(calificacionesRespuesta.id) })
+      .from(calificacionesRespuesta)
+      .where(eq(calificacionesRespuesta.util, true));
+    const [totalCalResult] = await db
+      .select({ total: count(calificacionesRespuesta.id) })
+      .from(calificacionesRespuesta);
+
+    const totalCal = Number(totalCalResult?.total ?? 0);
+    const utiles = Number(promedioResult?.total ?? 0);
+    const promCalificacion =
+      totalCal > 0 ? Math.round((utiles / totalCal) * 5 * 10) / 10 : 0;
+
+    const porMateria = await db
+      .select({ materia: chat.materia, total: count(chat.id) })
+      .from(chat)
+      .groupBy(chat.materia)
+      .orderBy(desc(count(chat.id)))
+      .limit(5);
+
+    const temasPopulares = porMateria
+      .filter((r) => r.materia)
+      .map((r) => ({ tema: r.materia as string, count: Number(r.total) }));
+
+    return {
+      totalUsuarios: Number(totalUsuariosResult?.total ?? 0),
+      usuariosActivos: Number(totalUsuariosResult?.total ?? 0),
+      totalConsultas: Number(totalConsultasResult?.total ?? 0),
+      promCalificacion,
+      temasPopulares,
+      consultasPorMateria: temasPopulares,
+      periodo: new Date().toLocaleDateString("es-CO", {
+        month: "long",
+        year: "numeric",
+      }),
+    };
+  } catch (_error) {
+    throw new ChatbotError(
+      "bad_request:database",
+      "Failed to get estadisticas"
+    );
+  }
+}
+
+export async function getAllConsultas(materia?: string) {
+  try {
+    const condicion = materia
+      ? eq(consultasSinRespuesta.materia, materia)
+      : undefined;
+    return await db
+      .select()
+      .from(consultasSinRespuesta)
+      .where(condicion)
+      .orderBy(desc(consultasSinRespuesta.creadoEn));
+  } catch (_error) {
+    throw new ChatbotError(
+      "bad_request:database",
+      "Failed to get all consultas"
+    );
+  }
+}
+
+export async function responderConsulta(consultaId: string, respuesta: string) {
+  try {
+    return await db
+      .update(consultasSinRespuesta)
+      .set({
+        respondida: true,
+        respuestaDocente: respuesta,
+        respondidoEn: new Date(),
+      })
+      .where(eq(consultasSinRespuesta.id, consultaId));
+  } catch (_error) {
+    throw new ChatbotError(
+      "bad_request:database",
+      "Failed to responder consulta"
+    );
+  }
 }
