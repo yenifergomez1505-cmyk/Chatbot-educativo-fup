@@ -1,5 +1,4 @@
 import type { InferSelectModel } from "drizzle-orm";
-export type RecursoGuardado = InferSelectModel<typeof recursoGuardado>;
 import {
   boolean,
   foreignKey,
@@ -43,7 +42,6 @@ export const chat = pgTable("Chat", {
   visibility: varchar("visibility", { enum: ["public", "private"] })
     .notNull()
     .default("private"),
-  // ✅ NUEVO: materia asociada al chat
   materia: varchar("materia", { length: 50 }),
 });
 
@@ -145,7 +143,6 @@ export const stream = pgTable(
 
 export type Stream = InferSelectModel<typeof stream>;
 
-// ✅ Tabla para tokens de recuperación de contraseña
 export const passwordResetToken = pgTable("PasswordResetToken", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   userId: uuid("userId")
@@ -188,8 +185,15 @@ export const recursoGuardado = pgTable("recurso_guardado", {
   userId: uuid("user_id")
     .notNull()
     .references(() => user.id),
-  titulo: text("titulo").notNull(),
+  chatId: text("chat_id"),
+  messageId: text("message_id"),
+  contenido: text("contenido").notNull(),
+  materia: text("materia").notNull(),
+  etiqueta: text("etiqueta"),
+  titulo: text("titulo"),
   descripcion: text("descripcion"),
   url: text("url"),
   creadoEn: timestamp("creado_en").defaultNow().notNull(),
 });
+
+export type RecursoGuardado = InferSelectModel<typeof recursoGuardado>;
