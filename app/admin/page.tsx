@@ -1,23 +1,56 @@
 /** biome-ignore-all lint/suspicious/noAlert: <explanation> */
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { signOut } from "next-auth/react";
 import {
-  UsersIcon,
-  BarChartIcon,
-  MessageSquareIcon,
   ArrowLeftIcon,
+  BarChartIcon,
+  CodeIcon,
+  DatabaseIcon,
+  LayersIcon,
+  MessageSquareIcon,
+  SettingsIcon,
   ShieldIcon,
+  UsersIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const MATERIA_LABELS: Record<string, string> = {
   poo: "POO",
   "estructura-de-datos": "Estructura de Datos",
   "ingenieria-de-software": "Ingeniería de Software I",
 };
+
+const MATERIAS_CONFIG = [
+  {
+    id: "poo",
+    nombre: "Programación Orientada a Objetos",
+    descripcion:
+      "Clases, herencia, polimorfismo, encapsulamiento y abstracción.",
+    icon: CodeIcon,
+    color: "text-[#0f4c8a]",
+    bg: "bg-[#e0eef9]",
+  },
+  {
+    id: "estructura-de-datos",
+    nombre: "Estructura de Datos",
+    descripcion: "Listas, pilas, colas, árboles, grafos y algoritmos.",
+    icon: DatabaseIcon,
+    color: "text-[#0f4c8a]",
+    bg: "bg-[#e0eef9]",
+  },
+  {
+    id: "ingenieria-de-software",
+    nombre: "Ingeniería de Software I",
+    descripcion:
+      "Ciclos de vida, metodologías ágiles, requerimientos y diseño.",
+    icon: LayersIcon,
+    color: "text-[#0f4c8a]",
+    bg: "bg-[#e0eef9]",
+  },
+];
 
 interface Usuario {
   id: string;
@@ -38,6 +71,7 @@ interface Estadisticas {
     creadoEn: string;
   }[];
 }
+
 interface Consulta {
   id: string;
   pregunta: string;
@@ -47,7 +81,7 @@ interface Consulta {
   creadoEn: string;
 }
 
-type Tab = "usuarios" | "estadisticas" | "consultas";
+type Tab = "usuarios" | "estadisticas" | "consultas" | "materias";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -61,6 +95,13 @@ export default function AdminPage() {
   const [busqueda, setBusqueda] = useState("");
   const [filtroRol, setFiltroRol] = useState("todos");
   const [showCrear, setShowCrear] = useState(false);
+  const [materiasActivas, setMateriasActivas] = useState<
+    Record<string, boolean>
+  >({
+    poo: true,
+    "estructura-de-datos": true,
+    "ingenieria-de-software": true,
+  });
   const [nuevoUsuario, setNuevoUsuario] = useState({
     email: "",
     password: "",
@@ -88,6 +129,9 @@ export default function AdminPage() {
           const res = await fetch("/api/admin?tipo=consultas");
           const data = await res.json();
           setConsultas(Array.isArray(data) ? data : []);
+        } else if (tipo === "materias") {
+          const saved = localStorage.getItem("materiasActivas");
+          if (saved) setMateriasActivas(JSON.parse(saved));
         }
       } catch {
         toast.error("Error al cargar datos");
@@ -101,6 +145,18 @@ export default function AdminPage() {
   useEffect(() => {
     cargarDatos(tab);
   }, [tab, cargarDatos]);
+
+  const handleToggleMateria = (materiaId: string) => {
+    const nuevas = {
+      ...materiasActivas,
+      [materiaId]: !materiasActivas[materiaId],
+    };
+    setMateriasActivas(nuevas);
+    localStorage.setItem("materiasActivas", JSON.stringify(nuevas));
+    toast.success(
+      `Materia ${nuevas[materiaId] ? "activada" : "desactivada"} correctamente`
+    );
+  };
 
   const handleCambiarRol = async (userId: string, role: string) => {
     try {
@@ -122,9 +178,7 @@ export default function AdminPage() {
   };
 
   const handleEliminar = async (userId: string) => {
-if (!confirm("¿Eliminar este usuario?")) {
-  return;
-}
+    if (!confirm("¿Eliminar este usuario?")) return;
     await fetch(`/api/admin?userId=${userId}`, { method: "DELETE" });
     setUsuarios((prev) => prev.filter((x) => x.id !== userId));
     toast.success("Usuario eliminado");
@@ -196,14 +250,14 @@ if (!confirm("¿Eliminar este usuario?")) {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-background">
+    <div className="min-h-screen bg-[#e0eef9]">
       {/* Header */}
-      <div className="bg-[#1a3a5c] px-6 py-4 flex items-center justify-between">
+      <div className="bg-[#082e56] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
-            type="button"
-            onClick={() => router.push("/")}
             className="text-white hover:opacity-80"
+            onClick={() => router.push("/")}
+            type="button"
           >
             <ArrowLeftIcon className="size-5" />
           </button>
@@ -219,8 +273,7 @@ if (!confirm("¿Eliminar este usuario?")) {
 
       <div className="flex min-h-[calc(100vh-60px)]">
         {/* Sidebar */}
-  {/* Sidebar */}
-        <div className="w-44 bg-[#1a3a5c] flex flex-col pt-4">
+        <div className="w-48 bg-[#082e56] flex flex-col pt-4">
           <div className="px-4 pb-4 border-b border-white/10">
             <p className="text-white font-semibold text-sm">Panel Admin</p>
             <p className="text-white/50 text-xs">Administrador</p>
@@ -229,34 +282,36 @@ if (!confirm("¿Eliminar este usuario?")) {
             { id: "usuarios", label: "Usuarios", icon: UsersIcon },
             { id: "estadisticas", label: "Estadísticas", icon: BarChartIcon },
             { id: "consultas", label: "Conocimiento", icon: MessageSquareIcon },
+            { id: "materias", label: "Materias", icon: SettingsIcon },
           ].map(({ id, label, icon: Icon }) => (
             <button
-              key={id}
-              type="button"
-              onClick={() => setTab(id as Tab)}
               className={`flex items-center gap-2 px-4 py-3 text-sm transition-colors w-full text-left ${
                 tab === id
-                  ? "bg-[#2563a8] text-white"
+                  ? "bg-[#0f4c8a] text-white"
                   : "text-white/60 hover:text-white hover:bg-white/10"
               }`}
+              key={id}
+              onClick={() => setTab(id as Tab)}
+              type="button"
             >
               <Icon className="size-4" />
               {label}
             </button>
           ))}
 
-          {/* Cerrar sesión al fondo */}
           <div className="mt-auto border-t border-white/10 p-4">
             <div className="flex items-center gap-3">
-              <div className="size-8 rounded-full bg-[#2563a8] flex items-center justify-center text-white font-semibold text-sm shrink-0">
+              <div className="size-8 rounded-full bg-[#0f4c8a] flex items-center justify-center text-white font-semibold text-sm shrink-0">
                 AF
               </div>
               <div>
-                <p className="text-white text-xs font-semibold">Administrador</p>
+                <p className="text-white text-xs font-semibold">
+                  Administrador
+                </p>
                 <button
-                  type="button"
-                  onClick={() => signOut({ callbackUrl: "/login" })}
                   className="text-white/50 text-xs hover:text-white transition-colors"
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  type="button"
                 >
                   Cerrar sesión
                 </button>
@@ -264,7 +319,6 @@ if (!confirm("¿Eliminar este usuario?")) {
             </div>
           </div>
         </div>
-        {/* FIN Sidebar */}
 
         {/* Main content */}
         <div className="flex-1 p-6">
@@ -277,51 +331,49 @@ if (!confirm("¿Eliminar este usuario?")) {
               { label: "Tasa satisfacción", value: "—" },
             ].map((s) => (
               <div
+                className="bg-white rounded-xl border border-[#7aaed8] p-4 text-center shadow-sm"
                 key={s.label}
-                className="bg-white dark:bg-card rounded-xl border border-border p-4 text-center shadow-sm"
               >
-                <p className="text-2xl font-bold text-[#1a3a5c] dark:text-foreground">
-                  {s.value}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
+                <p className="text-2xl font-bold text-[#082e56]">{s.value}</p>
+                <p className="text-xs text-[#1a6ab5] mt-1">{s.label}</p>
               </div>
             ))}
           </div>
 
           {loading ? (
             <div className="flex justify-center py-16">
-              <p className="text-muted-foreground text-sm">Cargando...</p>
+              <p className="text-[#1a6ab5] text-sm">Cargando...</p>
             </div>
           ) : (
             <>
               {/* TAB USUARIOS */}
               {tab === "usuarios" && (
-                <div className="bg-white dark:bg-card rounded-xl border border-border shadow-sm">
-                  <div className="px-5 py-4 border-b border-border space-y-3">
+                <div className="bg-white rounded-xl border border-[#7aaed8] shadow-sm">
+                  <div className="px-5 py-4 border-b border-[#c8dff2] space-y-3">
                     <div className="flex items-center justify-between">
-                      <h2 className="font-semibold text-sm">
+                      <h2 className="font-semibold text-sm text-[#082e56]">
                         Gestión de usuarios
                       </h2>
                       <button
-                        type="button"
+                        className="text-xs px-3 py-1.5 rounded-lg bg-[#0f4c8a] text-white font-medium hover:bg-[#082e56] transition-colors"
                         onClick={() => setShowCrear(true)}
-                        className="text-xs px-3 py-1.5 rounded-lg bg-[#1a3a5c] text-white font-medium hover:opacity-90"
+                        type="button"
                       >
                         + Agregar
                       </button>
                     </div>
                     <div className="flex gap-3">
                       <input
-                        type="text"
-                        placeholder="Buscar por nombre o correo..."
-                        value={busqueda}
+                        className="flex-1 text-sm border border-[#7aaed8] rounded-lg px-3 py-1.5 bg-[#e0eef9] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30"
                         onChange={(e) => setBusqueda(e.target.value)}
-                        className="flex-1 text-sm border border-input rounded-lg px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/30"
+                        placeholder="Buscar por nombre o correo..."
+                        type="text"
+                        value={busqueda}
                       />
                       <select
-                        value={filtroRol}
+                        className="text-sm border border-[#7aaed8] rounded-lg px-3 py-1.5 bg-[#e0eef9] focus:outline-none"
                         onChange={(e) => setFiltroRol(e.target.value)}
-                        className="text-sm border border-input rounded-lg px-3 py-1.5 bg-background focus:outline-none"
+                        value={filtroRol}
                       >
                         <option value="todos">Todos los roles</option>
                         <option value="estudiante">Estudiante</option>
@@ -329,26 +381,26 @@ if (!confirm("¿Eliminar este usuario?")) {
                         <option value="administrador">Administrador</option>
                       </select>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-[#1a6ab5]">
                       {usuariosFiltrados.length} de {usuarios.length} usuarios
                     </p>
                   </div>
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-border bg-gray-50 dark:bg-muted/30">
-                        <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">
+                      <tr className="border-b border-[#c8dff2] bg-[#e0eef9]">
+                        <th className="text-left px-5 py-3 text-xs font-medium text-[#1a6ab5]">
                           Nombre
                         </th>
-                        <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">
+                        <th className="text-left px-5 py-3 text-xs font-medium text-[#1a6ab5]">
                           Correo
                         </th>
-                        <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">
+                        <th className="text-left px-5 py-3 text-xs font-medium text-[#1a6ab5]">
                           Rol
                         </th>
-                        <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">
+                        <th className="text-left px-5 py-3 text-xs font-medium text-[#1a6ab5]">
                           Registro
                         </th>
-                        <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground">
+                        <th className="text-left px-5 py-3 text-xs font-medium text-[#1a6ab5]">
                           Acción
                         </th>
                       </tr>
@@ -356,24 +408,24 @@ if (!confirm("¿Eliminar este usuario?")) {
                     <tbody>
                       {usuariosFiltrados.map((u) => (
                         <tr
+                          className="border-b border-[#c8dff2] last:border-0 hover:bg-[#e0eef9]/50"
                           key={u.id}
-                          className="border-b border-border last:border-0 hover:bg-gray-50 dark:hover:bg-muted/20"
                         >
-                          <td className="px-5 py-3 text-sm font-medium">
+                          <td className="px-5 py-3 text-sm font-medium text-[#082e56]">
                             {u.name ?? "Sin nombre"}
                           </td>
-                          <td className="px-5 py-3 text-sm text-muted-foreground">
+                          <td className="px-5 py-3 text-sm text-[#1a6ab5]">
                             {u.email}
                           </td>
                           <td className="px-5 py-3">
                             {editando === u.id ? (
                               <select
+                                autoFocus
+                                className="text-xs border border-[#7aaed8] rounded-lg px-2 py-1 bg-[#e0eef9]"
                                 defaultValue={u.role}
                                 onChange={(e) =>
                                   handleCambiarRol(u.id, e.target.value)
                                 }
-                                className="text-xs border border-input rounded-lg px-2 py-1 bg-background"
-                                autoFocus
                               >
                                 <option value="estudiante">Estudiante</option>
                                 <option value="docente">Docente</option>
@@ -388,7 +440,7 @@ if (!confirm("¿Eliminar este usuario?")) {
                                     ? "bg-purple-100 text-purple-700"
                                     : u.role === "docente"
                                       ? "bg-green-100 text-green-700"
-                                      : "bg-blue-100 text-blue-700"
+                                      : "bg-[#e0eef9] text-[#0f4c8a]"
                                 }`}
                               >
                                 {u.role.charAt(0).toUpperCase() +
@@ -396,25 +448,25 @@ if (!confirm("¿Eliminar este usuario?")) {
                               </span>
                             )}
                           </td>
-                          <td className="px-5 py-3 text-xs text-muted-foreground">
+                          <td className="px-5 py-3 text-xs text-[#4a8dc4]">
                             {new Date(u.createdAt).toLocaleDateString("es-CO")}
                           </td>
                           <td className="px-5 py-3">
                             <div className="flex items-center gap-2">
                               <button
-                                type="button"
+                                className="text-xs text-[#0f4c8a] hover:underline font-medium"
                                 onClick={() =>
                                   setEditando(editando === u.id ? null : u.id)
                                 }
-                                className="text-xs text-[#2563a8] hover:underline font-medium"
+                                type="button"
                               >
                                 {editando === u.id ? "Cancelar" : "Editar"}
                               </button>
-                              <span className="text-muted-foreground">·</span>
+                              <span className="text-[#7aaed8]">·</span>
                               <button
-                                type="button"
-                                onClick={() => handleEliminar(u.id)}
                                 className="text-xs text-red-500 hover:underline font-medium"
+                                onClick={() => handleEliminar(u.id)}
+                                type="button"
                               >
                                 Eliminar
                               </button>
@@ -430,35 +482,33 @@ if (!confirm("¿Eliminar este usuario?")) {
               {/* TAB ESTADÍSTICAS */}
               {tab === "estadisticas" && estadisticas && (
                 <div className="space-y-5">
-                  {/* Temas más consultados */}
-                  <div className="bg-white dark:bg-card rounded-xl border border-border shadow-sm p-5">
-                    <h2 className="font-semibold text-sm mb-4">
+                  <div className="bg-white rounded-xl border border-[#7aaed8] shadow-sm p-5">
+                    <h2 className="font-semibold text-sm text-[#082e56] mb-4">
                       Temas más consultados
                     </h2>
                     {estadisticas.consultasPorMateria.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-8">
-                        No hay datos aún — los temas aparecerán cuando los
-                        estudiantes hagan consultas
+                      <p className="text-sm text-[#1a6ab5] text-center py-8">
+                        No hay datos aún
                       </p>
                     ) : (
                       <div className="space-y-3">
                         {estadisticas.consultasPorMateria.map((item) => (
                           <div
-                            key={item.materia}
                             className="flex items-center gap-4"
+                            key={item.materia}
                           >
-                            <span className="text-sm w-48 shrink-0">
+                            <span className="text-sm w-48 shrink-0 text-[#082e56]">
                               {MATERIA_LABELS[item.materia] ?? item.materia}
                             </span>
-                            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="flex-1 h-2 bg-[#e0eef9] rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-[#1a3a5c] rounded-full"
+                                className="h-full bg-[#0f4c8a] rounded-full"
                                 style={{
                                   width: `${Math.min(100, (Number(item.total) / Math.max(1, Number(estadisticas.totalConsultas))) * 100)}%`,
                                 }}
                               />
                             </div>
-                            <span className="text-sm font-medium text-muted-foreground w-8 text-right">
+                            <span className="text-sm font-medium text-[#1a6ab5] w-8 text-right">
                               {item.total}
                             </span>
                           </div>
@@ -467,34 +517,33 @@ if (!confirm("¿Eliminar este usuario?")) {
                     )}
                   </div>
 
-                  {/* Consultas pendientes */}
-                  <div className="bg-white dark:bg-card rounded-xl border border-border shadow-sm p-5">
-                    <h2 className="font-semibold text-sm mb-4">
+                  <div className="bg-white rounded-xl border border-[#7aaed8] shadow-sm p-5">
+                    <h2 className="font-semibold text-sm text-[#082e56] mb-4">
                       Consultas pendientes de respuesta docente
                     </h2>
                     {(estadisticas.pendientes ?? []).length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-6">
+                      <p className="text-sm text-[#1a6ab5] text-center py-6">
                         No hay consultas pendientes 🎉
                       </p>
                     ) : (
                       <div className="space-y-3">
                         {(estadisticas.pendientes ?? []).map((c) => (
                           <div
+                            className="flex items-center justify-between rounded-lg border border-[#c8dff2] px-4 py-3"
                             key={c.id}
-                            className="flex items-center justify-between rounded-lg border border-border px-4 py-3"
                           >
                             <div>
-                              <p className="text-sm font-medium">
+                              <p className="text-sm font-medium text-[#082e56]">
                                 {c.pregunta}
                               </p>
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium mt-1 inline-block">
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-[#e0eef9] text-[#0f4c8a] font-medium mt-1 inline-block">
                                 {MATERIA_LABELS[c.materia] ?? c.materia}
                               </span>
                             </div>
                             <button
-                              type="button"
+                              className="text-xs px-3 py-1.5 rounded-lg bg-[#0f4c8a] text-white font-medium hover:bg-[#082e56] transition-colors shrink-0 ml-4"
                               onClick={() => setTab("consultas")}
-                              className="text-xs px-3 py-1.5 rounded-lg bg-[#1a3a5c] text-white font-medium hover:opacity-90 shrink-0 ml-4"
+                              type="button"
                             >
                               Responder
                             </button>
@@ -510,33 +559,39 @@ if (!confirm("¿Eliminar este usuario?")) {
               {tab === "consultas" && (
                 <div className="space-y-4">
                   {consultas.length === 0 ? (
-                    <div className="bg-white dark:bg-card rounded-xl border border-border p-10 text-center">
-                      <MessageSquareIcon className="size-10 text-muted-foreground/30 mx-auto mb-2" />
-                      <p className="text-muted-foreground text-sm">
+                    <div className="bg-white rounded-xl border border-[#7aaed8] p-10 text-center">
+                      <MessageSquareIcon className="size-10 text-[#7aaed8] mx-auto mb-2" />
+                      <p className="text-[#1a6ab5] text-sm">
                         No hay consultas pendientes
                       </p>
                     </div>
                   ) : (
                     consultas.map((c) => (
                       <div
+                        className="bg-white rounded-xl border border-[#7aaed8] p-4 space-y-3 shadow-sm"
                         key={c.id}
-                        className="bg-white dark:bg-card rounded-xl border border-border p-4 space-y-3 shadow-sm"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-[#e0eef9] text-[#0f4c8a] font-medium">
                             {MATERIA_LABELS[c.materia] ?? c.materia}
                           </span>
                           <span
-                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.respondida ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              c.respondida
+                                ? "bg-green-100 text-green-700"
+                                : "bg-amber-50 text-amber-700"
+                            }`}
                           >
                             {c.respondida ? "✓ Respondida" : "Pendiente"}
                           </span>
                         </div>
-                        <p className="text-sm font-medium">{c.pregunta}</p>
+                        <p className="text-sm font-medium text-[#082e56]">
+                          {c.pregunta}
+                        </p>
                         {!c.respondida && (
                           <div className="space-y-2">
                             <textarea
-                              value={respuesta[c.id] ?? ""}
+                              className="w-full rounded-xl border border-[#7aaed8] bg-[#e0eef9] px-4 py-2.5 text-sm focus:outline-none resize-none"
                               onChange={(e) =>
                                 setRespuesta((prev) => ({
                                   ...prev,
@@ -545,12 +600,12 @@ if (!confirm("¿Eliminar este usuario?")) {
                               }
                               placeholder="Escribe tu respuesta..."
                               rows={3}
-                              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:outline-none resize-none"
+                              value={respuesta[c.id] ?? ""}
                             />
                             <button
-                              type="button"
+                              className="px-4 py-2 bg-[#0f4c8a] text-white rounded-xl text-sm font-medium hover:bg-[#082e56] transition-colors"
                               onClick={() => handleResponder(c.id)}
-                              className="px-4 py-2 bg-[#1a3a5c] text-white rounded-xl text-sm font-medium hover:opacity-90"
+                              type="button"
                             >
                               Enviar respuesta
                             </button>
@@ -561,6 +616,76 @@ if (!confirm("¿Eliminar este usuario?")) {
                   )}
                 </div>
               )}
+
+              {/* TAB MATERIAS */}
+              {tab === "materias" && (
+                <div className="space-y-4">
+                  <div className="bg-white rounded-xl border border-[#7aaed8] shadow-sm p-5">
+                    <h2 className="font-semibold text-sm text-[#082e56] mb-1">
+                      Configurar materias
+                    </h2>
+                    <p className="text-xs text-[#1a6ab5] mb-5">
+                      Activa o desactiva las materias disponibles para los
+                      estudiantes en el chatbot.
+                    </p>
+                    <div className="space-y-4">
+                      {MATERIAS_CONFIG.map((m) => {
+                        const Icon = m.icon;
+                        return (
+                          <div
+                            className="flex items-center justify-between rounded-xl border border-[#c8dff2] px-5 py-4 hover:bg-[#e0eef9]/50 transition-colors"
+                            key={m.id}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`size-10 rounded-lg ${m.bg} flex items-center justify-center`}
+                              >
+                                <Icon className={`size-5 ${m.color}`} />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-[#082e56]">
+                                  {m.nombre}
+                                </p>
+                                <p className="text-xs text-[#4a8dc4]">
+                                  {m.descripcion}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                  materiasActivas[m.id]
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-red-100 text-red-600"
+                                }`}
+                              >
+                                {materiasActivas[m.id] ? "Activa" : "Inactiva"}
+                              </span>
+                              <button
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                  materiasActivas[m.id]
+                                    ? "bg-[#0f4c8a]"
+                                    : "bg-[#c8dff2]"
+                                }`}
+                                onClick={() => handleToggleMateria(m.id)}
+                                type="button"
+                              >
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    materiasActivas[m.id]
+                                      ? "translate-x-6"
+                                      : "translate-x-1"
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -569,39 +694,41 @@ if (!confirm("¿Eliminar este usuario?")) {
       {/* Modal crear usuario */}
       {showCrear && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-card rounded-2xl p-6 w-full max-w-md shadow-xl space-y-4">
-            <h2 className="font-semibold text-lg">Crear usuario</h2>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl space-y-4">
+            <h2 className="font-semibold text-lg text-[#082e56]">
+              Crear usuario
+            </h2>
             <input
-              placeholder="Nombre"
-              value={nuevoUsuario.name}
+              className="w-full border border-[#7aaed8] rounded-xl px-4 py-2 text-sm bg-[#e0eef9]"
               onChange={(e) =>
                 setNuevoUsuario((p) => ({ ...p, name: e.target.value }))
               }
-              className="w-full border border-input rounded-xl px-4 py-2 text-sm bg-background"
+              placeholder="Nombre"
+              value={nuevoUsuario.name}
             />
             <input
-              placeholder="Correo electrónico"
-              value={nuevoUsuario.email}
+              className="w-full border border-[#7aaed8] rounded-xl px-4 py-2 text-sm bg-[#e0eef9]"
               onChange={(e) =>
                 setNuevoUsuario((p) => ({ ...p, email: e.target.value }))
               }
-              className="w-full border border-input rounded-xl px-4 py-2 text-sm bg-background"
+              placeholder="Correo electrónico"
+              value={nuevoUsuario.email}
             />
             <input
-              placeholder="Contraseña (mín. 6 caracteres)"
-              type="password"
-              value={nuevoUsuario.password}
+              className="w-full border border-[#7aaed8] rounded-xl px-4 py-2 text-sm bg-[#e0eef9]"
               onChange={(e) =>
                 setNuevoUsuario((p) => ({ ...p, password: e.target.value }))
               }
-              className="w-full border border-input rounded-xl px-4 py-2 text-sm bg-background"
+              placeholder="Contraseña (mín. 6 caracteres)"
+              type="password"
+              value={nuevoUsuario.password}
             />
             <select
-              value={nuevoUsuario.role}
+              className="w-full border border-[#7aaed8] rounded-xl px-4 py-2 text-sm bg-[#e0eef9]"
               onChange={(e) =>
                 setNuevoUsuario((p) => ({ ...p, role: e.target.value }))
               }
-              className="w-full border border-input rounded-xl px-4 py-2 text-sm bg-background"
+              value={nuevoUsuario.role}
             >
               <option value="estudiante">Estudiante</option>
               <option value="docente">Docente</option>
@@ -609,16 +736,16 @@ if (!confirm("¿Eliminar este usuario?")) {
             </select>
             <div className="flex gap-2 justify-end pt-2">
               <button
-                type="button"
+                className="px-4 py-2 text-sm rounded-xl border border-[#7aaed8] hover:bg-[#e0eef9] text-[#082e56]"
                 onClick={() => setShowCrear(false)}
-                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted"
+                type="button"
               >
                 Cancelar
               </button>
               <button
-                type="button"
+                className="px-4 py-2 text-sm rounded-xl bg-[#0f4c8a] text-white font-medium hover:bg-[#082e56] transition-colors"
                 onClick={handleCrear}
-                className="px-4 py-2 text-sm rounded-xl bg-[#1a3a5c] text-white font-medium hover:opacity-90"
+                type="button"
               >
                 Crear
               </button>

@@ -2,9 +2,9 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const MATERIAS = [
+const TODAS_MATERIAS = [
   {
     id: "poo",
     nombre: "POO",
@@ -66,7 +66,7 @@ const MATERIAS = [
   },
 ] as const;
 
-type MateriaId = (typeof MATERIAS)[number]["id"];
+type MateriaId = (typeof TODAS_MATERIAS)[number]["id"];
 
 const PREGUNTA_INICIAL: Record<MateriaId, string> = {
   poo: "Explícame qué es la programación orientada a objetos",
@@ -77,6 +77,22 @@ const PREGUNTA_INICIAL: Record<MateriaId, string> = {
 export const Greeting = () => {
   const router = useRouter();
   const [selected, setSelected] = useState<MateriaId | null>(null);
+  const [materiasActivas, setMateriasActivas] = useState<
+    Record<string, boolean>
+  >({
+    poo: true,
+    "estructura-de-datos": true,
+    "ingenieria-de-software": true,
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem("materiasActivas");
+    if (saved) setMateriasActivas(JSON.parse(saved));
+  }, []);
+
+  const MATERIAS = TODAS_MATERIAS.filter(
+    (m) => materiasActivas[m.id] !== false
+  );
 
   const materiaSeleccionada = MATERIAS.find((m) => m.id === selected) ?? null;
 
@@ -94,7 +110,6 @@ export const Greeting = () => {
 
   return (
     <div className="flex flex-col items-center px-4 gap-6">
-      {/* Título */}
       <motion.div
         animate={{ opacity: 1, y: 0 }}
         className="text-center font-semibold text-2xl tracking-tight text-foreground md:text-3xl"
@@ -104,51 +119,52 @@ export const Greeting = () => {
         Selecciona una materia para comenzar
       </motion.div>
 
-      {/* Tarjetas de materias */}
-      <motion.div
-        animate={{ opacity: 1, y: 0 }}
-        className="grid w-full max-w-3xl grid-cols-1 gap-4 md:grid-cols-3"
-        initial={{ opacity: 0, y: 10 }}
-        transition={{ delay: 0.35, duration: 0.5 }}
-      >
-        {MATERIAS.map((materia) => {
-          const isSelected = selected === materia.id;
-          return (
-            <button
-              className={`rounded-2xl border-2 p-5 text-left transition-all duration-200 hover:shadow-md ${
-                isSelected
-                  ? "border-primary bg-secondary shadow-md"
-                  : "border-border bg-card hover:border-primary/50"
-              }`}
-              key={materia.id}
-              onClick={() => setSelected(materia.id)}
-              type="button"
-            >
-              <h3
-                className={`font-semibold text-base ${
-                  isSelected ? "text-primary" : "text-foreground"
+      {MATERIAS.length === 0 ? (
+        <div className="text-center py-10 text-muted-foreground text-sm">
+          No hay materias activas. El administrador debe activar al menos una
+          materia.
+        </div>
+      ) : (
+        <motion.div
+          animate={{ opacity: 1, y: 0 }}
+          className="grid w-full max-w-3xl grid-cols-1 gap-4 md:grid-cols-3"
+          initial={{ opacity: 0, y: 10 }}
+          transition={{ delay: 0.35, duration: 0.5 }}
+        >
+          {MATERIAS.map((materia) => {
+            const isSelected = selected === materia.id;
+            return (
+              <button
+                className={`rounded-2xl border-2 p-5 text-left transition-all duration-200 hover:shadow-md ${
+                  isSelected
+                    ? "border-primary bg-secondary shadow-md"
+                    : "border-border bg-card hover:border-primary/50"
                 }`}
+                key={materia.id}
+                onClick={() => setSelected(materia.id)}
+                type="button"
               >
-                {materia.nombre}
-              </h3>
-              <p
-                className={`mt-1 text-xs font-medium ${
-                  isSelected ? "text-edubot-medium" : "text-muted-foreground"
-                }`}
-              >
-                {materia.subtitulo}
-              </p>
-              {isSelected && (
-                <p className="mt-2 text-xs text-primary font-semibold">
-                  ✓ Seleccionada
+                <h3
+                  className={`font-semibold text-base ${isSelected ? "text-primary" : "text-foreground"}`}
+                >
+                  {materia.nombre}
+                </h3>
+                <p
+                  className={`mt-1 text-xs font-medium ${isSelected ? "text-edubot-medium" : "text-muted-foreground"}`}
+                >
+                  {materia.subtitulo}
                 </p>
-              )}
-            </button>
-          );
-        })}
-      </motion.div>
+                {isSelected && (
+                  <p className="mt-2 text-xs text-primary font-semibold">
+                    ✓ Seleccionada
+                  </p>
+                )}
+              </button>
+            );
+          })}
+        </motion.div>
+      )}
 
-      {/* Ejemplos predefinidos — solo cuando hay materia seleccionada */}
       <AnimatePresence mode="wait">
         {materiaSeleccionada && (
           <motion.div
@@ -183,7 +199,6 @@ export const Greeting = () => {
         )}
       </AnimatePresence>
 
-      {/* Botón Iniciar conversación */}
       <motion.div
         animate={{ opacity: 1, y: 0 }}
         initial={{ opacity: 0, y: 10 }}
