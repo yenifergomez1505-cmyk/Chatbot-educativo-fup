@@ -134,9 +134,9 @@ export default function ConocimientoPage() {
         </div>
         {!mostrarFormulario && (
           <button
-            type="button"
-            onClick={() => setAgregando(true)}
             className="bg-[#0f4c8a] text-white text-xs px-4 py-2 rounded-lg hover:bg-[#082e56] transition-colors"
+            onClick={() => setAgregando(true)}
+            type="button"
           >
             + Agregar tema
           </button>
@@ -152,18 +152,18 @@ export default function ConocimientoPage() {
           <div className="flex flex-col gap-3">
             <div>
               <label
-                htmlFor="materia"
                 className="text-xs font-medium text-[#0f4c8a] mb-1 block"
+                htmlFor="materia"
               >
                 Materia
               </label>
               <select
+                className="w-full bg-[#e0eef9] border border-[#7aaed8] rounded-lg px-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30"
                 id="materia"
-                value={form.materia}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, materia: e.target.value }))
                 }
-                className="w-full bg-[#e0eef9] border border-[#7aaed8] rounded-lg px-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30"
+                value={form.materia}
               >
                 {MATERIAS.map((m) => (
                   <option key={m} value={m}>
@@ -175,50 +175,50 @@ export default function ConocimientoPage() {
 
             <div>
               <label
-                htmlFor="nombre"
                 className="text-xs font-medium text-[#0f4c8a] mb-1 block"
+                htmlFor="nombre"
               >
                 Nombre del tema
               </label>
               <input
+                className="w-full bg-[#e0eef9] border border-[#7aaed8] rounded-lg px-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30"
                 id="nombre"
-                type="text"
-                value={form.nombre}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, nombre: e.target.value }))
                 }
                 placeholder="Ej: Listas enlazadas — definición y operaciones"
-                className="w-full bg-[#e0eef9] border border-[#7aaed8] rounded-lg px-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30"
+                type="text"
+                value={form.nombre}
               />
             </div>
 
             <div>
               <label
-                htmlFor="contenido"
                 className="text-xs font-medium text-[#0f4c8a] mb-1 block"
+                htmlFor="contenido"
               >
                 Contenido
               </label>
               <textarea
+                className="w-full bg-[#e0eef9] border border-[#7aaed8] rounded-lg px-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30 min-h-[120px] resize-y"
                 id="contenido"
-                value={form.contenido}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, contenido: e.target.value }))
                 }
                 placeholder="Escribe la explicación que el chatbot usará..."
-                className="w-full bg-[#e0eef9] border border-[#7aaed8] rounded-lg px-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30 min-h-[120px] resize-y"
+                value={form.contenido}
               />
             </div>
 
             <div className="flex items-center gap-3">
               <span className="text-xs font-medium text-[#0f4c8a]">Estado</span>
               <button
-                id="toggle-activo"
-                type="button"
-                onClick={() => setForm((f) => ({ ...f, activo: !f.activo }))}
                 className={`relative w-10 h-5 rounded-full transition-colors ${
                   form.activo ? "bg-[#0f4c8a]" : "bg-[#c8dff2]"
                 }`}
+                id="toggle-activo"
+                onClick={() => setForm((f) => ({ ...f, activo: !f.activo }))}
+                type="button"
               >
                 <span
                   className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${
@@ -235,17 +235,17 @@ export default function ConocimientoPage() {
 
             <div className="flex gap-2 pt-1">
               <button
-                type="button"
-                onClick={handleGuardar}
-                disabled={guardando}
                 className="bg-[#0f4c8a] text-white text-xs px-4 py-2 rounded-lg hover:bg-[#082e56] transition-colors disabled:opacity-50"
+                disabled={guardando}
+                onClick={handleGuardar}
+                type="button"
               >
                 {guardando ? "Guardando..." : "Guardar"}
               </button>
               <button
-                type="button"
-                onClick={handleCancelar}
                 className="bg-[#c8dff2] text-[#082e56] text-xs px-4 py-2 rounded-lg hover:bg-[#7aaed8] transition-colors"
+                onClick={handleCancelar}
+                type="button"
               >
                 Cancelar
               </button>
@@ -262,25 +262,25 @@ export default function ConocimientoPage() {
             🔍
           </span>
           <input
-            type="text"
-            value={busqueda}
+            className="w-full bg-white border border-[#7aaed8] rounded-lg pl-8 pr-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30"
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar por nombre o contenido..."
-            className="w-full bg-white border border-[#7aaed8] rounded-lg pl-8 pr-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30"
+            type="text"
+            value={busqueda}
           />
         </div>
 
         <div className="flex gap-2">
           {/* Filtro materia */}
           <div className="flex-1">
-            <label htmlFor="filtro-materia" className="sr-only">
+            <label className="sr-only" htmlFor="filtro-materia">
               Filtrar por materia
             </label>
             <select
-              id="filtro-materia"
-              value={filtroMateria}
-              onChange={(e) => setFiltroMateria(e.target.value)}
               className="w-full bg-white border border-[#7aaed8] rounded-lg px-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30"
+              id="filtro-materia"
+              onChange={(e) => setFiltroMateria(e.target.value)}
+              value={filtroMateria}
             >
               <option value="">Todas las materias</option>
               {MATERIAS.map((m) => (
@@ -293,28 +293,28 @@ export default function ConocimientoPage() {
 
           {/* Filtro fecha */}
           <div className="flex-1">
-            <label htmlFor="filtro-fecha" className="sr-only">
+            <label className="sr-only" htmlFor="filtro-fecha">
               Filtrar por fecha
             </label>
             <input
+              className="w-full bg-white border border-[#7aaed8] rounded-lg px-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30"
               id="filtro-fecha"
+              onChange={(e) => setFiltroFecha(e.target.value)}
               type="date"
               value={filtroFecha}
-              onChange={(e) => setFiltroFecha(e.target.value)}
-              className="w-full bg-white border border-[#7aaed8] rounded-lg px-3 py-2 text-xs text-[#082e56] focus:outline-none focus:ring-2 focus:ring-[#0f4c8a]/30"
             />
           </div>
 
           {/* Limpiar filtros */}
           {(busqueda !== "" || filtroMateria !== "" || filtroFecha !== "") && (
             <button
-              type="button"
+              className="bg-[#c8dff2] text-[#082e56] text-xs px-3 py-2 rounded-lg hover:bg-[#7aaed8] transition-colors shrink-0"
               onClick={() => {
                 setBusqueda("");
                 setFiltroMateria("");
                 setFiltroFecha("");
               }}
-              className="bg-[#c8dff2] text-[#082e56] text-xs px-3 py-2 rounded-lg hover:bg-[#7aaed8] transition-colors shrink-0"
+              type="button"
             >
               Limpiar
             </button>
@@ -332,12 +332,12 @@ export default function ConocimientoPage() {
       <div>
         {temasFiltrados.length === 0 ? (
           <div className="text-center py-12 text-[#4a8dc4] text-sm">
-            📚 No hay temas.{" "}
+            No hay temas.{" "}
             {!mostrarFormulario && (
               <button
-                type="button"
-                onClick={() => setAgregando(true)}
                 className="text-[#0f4c8a] hover:underline"
+                onClick={() => setAgregando(true)}
+                type="button"
               >
                 Agrega el primero
               </button>
@@ -347,8 +347,8 @@ export default function ConocimientoPage() {
           <div className="flex flex-col gap-3">
             {temasFiltrados.map((t) => (
               <div
-                key={t.id}
                 className="bg-white border border-[#7aaed8] rounded-xl p-4"
+                key={t.id}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -382,16 +382,16 @@ export default function ConocimientoPage() {
                   </div>
                   <div className="flex flex-col gap-1.5 shrink-0">
                     <button
-                      type="button"
-                      onClick={() => handleEditar(t)}
                       className="bg-[#e0eef9] text-[#0f4c8a] text-xs px-3 py-1.5 rounded-lg hover:bg-[#c8dff2] transition-colors"
+                      onClick={() => handleEditar(t)}
+                      type="button"
                     >
                       ✏️ Editar
                     </button>
                     <button
-                      type="button"
-                      onClick={() => handleEliminar(t.id)}
                       className="bg-red-50 text-red-600 text-xs px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
+                      onClick={() => handleEliminar(t.id)}
+                      type="button"
                     >
                       🗑️ Eliminar
                     </button>

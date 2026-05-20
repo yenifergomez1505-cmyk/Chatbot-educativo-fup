@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+const MATERIA_LABELS: Record<string, string> = {
+  poo: "POO",
+  "estructura-de-datos": "Estructura de Datos",
+  "ingenieria-de-software": "Ingeniería de Software I",
+  "sin-materia": "Sin materia",
+};
+
 type Consulta = {
   id: string;
   pregunta: string;
@@ -28,7 +35,6 @@ export default function ConsultasPage() {
       if (filtroMateria !== "") {
         params.append("materia", filtroMateria);
       }
-      // ✅ mandar "todas=true" siempre que el filtro no sea solo pendientes
       if (filtroEstado === "todas" || filtroEstado === "respondidas") {
         params.append("todas", "true");
       }
@@ -42,7 +48,6 @@ export default function ConsultasPage() {
     }
   };
 
-  // ✅ agregar filtroEstado como dependencia
   useEffect(() => {
     cargarConsultas();
   }, [filtroMateria, filtroEstado]);
@@ -132,7 +137,7 @@ export default function ConsultasPage() {
         </div>
       ) : consultasFiltradas.length === 0 ? (
         <div className="text-center py-12 text-[#4a8dc4] text-sm">
-          ✅ No hay consultas en esta categoría
+          No hay consultas en esta categoría
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -147,7 +152,7 @@ export default function ConsultasPage() {
 
               <div className="flex items-center gap-2 mb-3">
                 <span className="bg-[#e0eef9] text-[#0f4c8a] text-[10px] px-2 py-0.5 rounded-full">
-                  {c.materia}
+                  {MATERIA_LABELS[c.materia] ?? c.materia}
                 </span>
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-full ${
@@ -210,8 +215,8 @@ export default function ConsultasPage() {
                         </button>
                       </div>
                       <p className="text-[10px] text-[#4a8dc4] mt-2">
-                        ℹ La respuesta quedará visible para todos los
-                        estudiantes con esta misma duda.
+                        La respuesta quedará visible para todos los estudiantes
+                        con esta misma duda.
                       </p>
                     </div>
                   ) : (

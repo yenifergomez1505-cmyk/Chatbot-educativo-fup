@@ -1,6 +1,13 @@
-import { auth } from "@/app/(auth)/auth";
-import { getEstadisticas, getConsultasSinRespuesta } from "@/lib/db/queries";
+import { BarChartIcon, BookOpenIcon } from "lucide-react";
 import Link from "next/link";
+import { auth } from "@/app/(auth)/auth";
+import { getConsultasSinRespuesta, getEstadisticas } from "@/lib/db/queries";
+
+const MATERIA_LABELS: Record<string, string> = {
+  poo: "POO",
+  "estructura-de-datos": "Estructura de Datos",
+  "ingenieria-de-software": "Ingeniería de Software I",
+};
 
 export default async function DocenteDashboard() {
   const session = await auth();
@@ -15,7 +22,7 @@ export default async function DocenteDashboard() {
       {/* Saludo */}
       <div className="mb-5">
         <h1 className="text-lg font-semibold text-[#082e56]">
-          Bienvenida, {nombre} 👋
+          Bienvenida, {nombre}
         </h1>
         <p className="text-xs text-[#1a6ab5] mt-1">
           Aquí tienes el resumen de hoy
@@ -23,26 +30,26 @@ export default async function DocenteDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <StatCard
-          numero={pendientes.length}
-          label="Consultas pendientes"
           color="text-red-600"
+          label="Consultas pendientes"
+          numero={pendientes.length}
         />
         <StatCard
-          numero={stats.totalConsultas ?? 0}
-          label="Consultas totales"
           color="text-[#0f4c8a]"
+          label="Consultas totales"
+          numero={stats.totalConsultas ?? 0}
         />
         <StatCard
-          numero={stats.totalUsuarios ?? 0}
-          label="Estudiantes activos"
           color="text-green-700"
+          label="Estudiantes activos"
+          numero={stats.totalUsuarios ?? 0}
         />
         <StatCard
-          numero={`${stats.promCalificacion ?? 0}/5`}
-          label="Satisfacción IA"
           color="text-amber-700"
+          label="Satisfacción IA"
+          numero={`${stats.promCalificacion ?? 0}/5`}
         />
       </div>
 
@@ -59,14 +66,14 @@ export default async function DocenteDashboard() {
 
         {pendientes.length === 0 ? (
           <div className="text-center py-6 text-[#4a8dc4] text-xs">
-            ✅ No hay consultas pendientes
+            No hay consultas pendientes
           </div>
         ) : (
           <div className="flex flex-col gap-2">
             {pendientes.slice(0, 3).map((c) => (
               <div
-                key={c.id}
                 className="flex items-center justify-between gap-3 bg-white border border-[#c8dff2] rounded-lg px-3 py-2.5"
+                key={c.id}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-[#082e56] truncate">
@@ -74,7 +81,7 @@ export default async function DocenteDashboard() {
                   </p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="bg-[#e0eef9] text-[#0f4c8a] text-[10px] px-2 py-0.5 rounded-full">
-                      {c.materia}
+                      {MATERIA_LABELS[c.materia] ?? c.materia}
                     </span>
                     <span className="text-[10px] text-[#4a8dc4]">
                       {new Date(c.creadoEn).toLocaleDateString("es-CO")}
@@ -82,8 +89,8 @@ export default async function DocenteDashboard() {
                   </div>
                 </div>
                 <Link
-                  href="/docente/consultas"
                   className="bg-[#0f4c8a] text-white text-[11px] px-3 py-1.5 rounded-lg hover:bg-[#082e56] transition-colors shrink-0"
+                  href="/docente/consultas"
                 >
                   Responder
                 </Link>
@@ -95,8 +102,8 @@ export default async function DocenteDashboard() {
         {pendientes.length > 3 && (
           <div className="text-center mt-3">
             <Link
-              href="/docente/consultas"
               className="text-xs text-[#0f4c8a] hover:underline"
+              href="/docente/consultas"
             >
               Ver todas ({pendientes.length}) →
             </Link>
@@ -105,12 +112,14 @@ export default async function DocenteDashboard() {
       </div>
 
       {/* Accesos rápidos */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Link
+          className="bg-white border border-[#7aaed8] rounded-xl p-4 flex items-center gap-3 hover:bg-[#e0eef9] transition-colors"
           href="/docente/conocimiento"
-          className="bg-white border border-[#7aaed8] rounded-xl p-4 flex items-center gap-3 hover:bg-[#c8dff2] transition-colors"
         >
-          <span className="text-2xl">📚</span>
+          <div className="w-10 h-10 bg-[#e0eef9] rounded-lg flex items-center justify-center shrink-0">
+            <BookOpenIcon className="size-5 text-[#0f4c8a]" />
+          </div>
           <div>
             <div className="text-sm font-semibold text-[#082e56]">
               Base de conocimiento
@@ -121,10 +130,12 @@ export default async function DocenteDashboard() {
           </div>
         </Link>
         <Link
+          className="bg-white border border-[#7aaed8] rounded-xl p-4 flex items-center gap-3 hover:bg-[#e0eef9] transition-colors"
           href="/docente/estadisticas"
-          className="bg-white border border-[#7aaed8] rounded-xl p-4 flex items-center gap-3 hover:bg-[#c8dff2] transition-colors"
         >
-          <span className="text-2xl">📈</span>
+          <div className="w-10 h-10 bg-[#e0eef9] rounded-lg flex items-center justify-center shrink-0">
+            <BarChartIcon className="size-5 text-[#0f4c8a]" />
+          </div>
           <div>
             <div className="text-sm font-semibold text-[#082e56]">
               Estadísticas
