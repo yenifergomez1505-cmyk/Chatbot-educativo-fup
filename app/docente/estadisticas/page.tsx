@@ -1,5 +1,11 @@
 import { getEstadisticas } from "@/lib/db/queries";
 
+const MATERIA_LABELS: Record<string, string> = {
+  poo: "POO",
+  "estructura-de-datos": "Estructura de Datos",
+  "ingenieria-de-software": "Ingeniería de Software I",
+};
+
 export default async function EstadisticasPage() {
   const stats = await getEstadisticas();
 
@@ -53,9 +59,9 @@ export default async function EstadisticasPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {stats.temasPopulares.map((t) => (
-              <div key={t.tema} className="flex items-center gap-3">
-                <div className="w-36 text-xs text-[#082e56] truncate shrink-0">
-                  {t.tema}
+              <div className="flex items-center gap-3" key={t.tema}>
+                <div className="w-48 text-xs text-[#082e56] truncate shrink-0">
+                  {MATERIA_LABELS[t.tema] ?? t.tema}
                 </div>
                 <div className="flex-1 bg-[#e0eef9] rounded-full h-2">
                   <div
@@ -86,9 +92,9 @@ export default async function EstadisticasPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {stats.consultasPorMateria.map((m) => (
-              <div key={m.tema} className="flex items-center gap-3">
-                <div className="w-36 text-xs text-[#082e56] truncate shrink-0">
-                  {m.tema}
+              <div className="flex items-center gap-3" key={m.tema}>
+                <div className="w-48 text-xs text-[#082e56] truncate shrink-0">
+                  {MATERIA_LABELS[m.tema] ?? m.tema}
                 </div>
                 <div className="flex-1 bg-[#e0eef9] rounded-full h-2">
                   <div

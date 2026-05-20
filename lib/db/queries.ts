@@ -768,18 +768,18 @@ export async function getEstadisticas() {
       .select({ total: count(message.id) })
       .from(message)
       .where(eq(message.role, "user"));
-    const [promedioResult] = await db
-      .select({ total: count(calificacionesRespuesta.id) })
-      .from(calificacionesRespuesta)
-      .where(eq(calificacionesRespuesta.util, true));
-    const [totalCalResult] = await db
-      .select({ total: count(calificacionesRespuesta.id) })
-      .from(calificacionesRespuesta);
+    const [votosUtilesResult] = await db
+      .select({ total: count(vote.messageId) })
+      .from(vote)
+      .where(eq(vote.isUpvoted, true));
+    const [totalVotosResult] = await db
+      .select({ total: count(vote.messageId) })
+      .from(vote);
 
-    const totalCal = Number(totalCalResult?.total ?? 0);
-    const utiles = Number(promedioResult?.total ?? 0);
+    const totalVotos = Number(totalVotosResult?.total ?? 0);
+    const votosUtiles = Number(votosUtilesResult?.total ?? 0);
     const promCalificacion =
-      totalCal > 0 ? Math.round((utiles / totalCal) * 5 * 10) / 10 : 0;
+      totalVotos > 0 ? Math.round((votosUtiles / totalVotos) * 5 * 10) / 10 : 0;
 
     const porMateria = await db
       .select({ materia: chat.materia, total: count(chat.id) })
