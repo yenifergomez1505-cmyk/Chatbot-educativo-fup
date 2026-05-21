@@ -790,7 +790,7 @@ export async function getEstadisticas() {
 
     const temasPopulares = porMateria
       .filter((r) => r.materia)
-      .map((r) => ({ tema: r.materia as string, count: Number(r.total) }));
+      .map((r) => ({ materia: r.materia as string, total: Number(r.total) }));
 
     return {
       totalUsuarios: Number(totalUsuariosResult?.total ?? 0),
