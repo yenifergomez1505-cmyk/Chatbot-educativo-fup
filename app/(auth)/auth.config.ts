@@ -6,7 +6,7 @@ export const authConfig = {
   basePath: "/api/auth",
   trustHost: true,
   pages: {
-    signIn: `${base}/login`,
+    signIn: `${base}/login` ,
     newUser: `${base}/`,
     signOut: `${base}/landing`,
   },

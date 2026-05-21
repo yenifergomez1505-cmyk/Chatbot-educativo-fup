@@ -64,8 +64,8 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="en"
       className={`${geist.variable} ${geistMono.variable}`}
+      lang="en"
       suppressHydrationWarning
     >
       <head>
@@ -80,8 +80,8 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
-          enableSystem
           disableTransitionOnChange
+          enableSystem
         >
           <SessionProvider
             basePath={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/auth`}

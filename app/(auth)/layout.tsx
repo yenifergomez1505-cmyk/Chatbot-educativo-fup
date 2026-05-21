@@ -1,3 +1,5 @@
+import { Toaster } from "sonner";
+
 export default function AuthLayout({
   children,
 }: {
@@ -18,7 +20,7 @@ export default function AuthLayout({
       }}
     >
       {/* Glow fondo */}
-    
+
       <div
         style={{
           position: "absolute",
@@ -130,6 +132,7 @@ export default function AuthLayout({
           </p>
         </div>
       </div>
+      <Toaster position="top-center" />
     </div>
   );
 }

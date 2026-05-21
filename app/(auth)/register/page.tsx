@@ -28,7 +28,6 @@ export default function Page() {
         description:
           "Revisa el correo y que la contraseña tenga mínimo 6 caracteres.",
       });
-      //  mensaje para correo no institucional
     } else if (state.status === "invalid_email") {
       toast({
         type: "error",
@@ -43,9 +42,60 @@ export default function Page() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const formData = new FormData(e.currentTarget);
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    if (password.length < 6) {
+      toast({
+        type: "error",
+        description: "La contraseña debe tener mínimo 6 caracteres.",
+      });
+      return;
+    }
+
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    if (!specialCharRegex.test(password)) {
+      toast({
+        type: "error",
+        description:
+          "La contraseña debe tener al menos un carácter especial (!@#$%...).",
+      });
+      return;
+    }
+
+    const weakSequences = [
+      "123",
+      "1234",
+      "12345",
+      "abc",
+      "abcd",
+      "qwerty",
+      "password",
+      "admin",
+    ];
+    const lowerPassword = password.toLowerCase();
+    if (weakSequences.some((seq) => lowerPassword.includes(seq))) {
+      toast({
+        type: "error",
+        description:
+          "La contraseña no puede contener secuencias fáciles como 123 o abc.",
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        type: "error",
+        description: "Las contraseñas no coinciden.",
+      });
+      return;
+    }
+
     formData.set("role", role);
     setEmail(formData.get("email") as string);
+
     startTransition(() => {
       formAction(formData);
     });
@@ -90,10 +140,8 @@ export default function Page() {
             id="email"
             name="email"
             placeholder="@fup.edu.co"
-            required
             type="email"
           />
-          {/*  hint debajo del campo */}
           <p className="mt-1 text-[10px] text-edubot-light">
             Solo se permiten correos @fup.edu.co
           </p>
@@ -111,9 +159,12 @@ export default function Page() {
             id="password"
             name="password"
             placeholder="••••••••"
-            required
             type="password"
           />
+          <p className="mt-1 text-[10px] text-edubot-light">
+            Mínimo 6 caracteres, un carácter especial (!@#$%...) y sin
+            secuencias como 123 o abc.
+          </p>
         </div>
 
         <div>
