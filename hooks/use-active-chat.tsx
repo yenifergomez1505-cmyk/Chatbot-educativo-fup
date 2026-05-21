@@ -30,6 +30,7 @@ import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
 
 type ActiveChatContextValue = {
   chatId: string;
+  materia: string | undefined;
   messages: ChatMessage[];
   setMessages: UseChatHelpers<ChatMessage>["setMessages"];
   sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
@@ -261,8 +262,8 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ActiveChatContextValue>(
     () => ({
       chatId,
+      materia: materiaRef.current,
       messages,
-      setMessages,
       sendMessage,
       status,
       stop,

@@ -4,6 +4,7 @@ import { memo } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { useCopyToClipboard } from "usehooks-ts";
+import { useActiveChat } from "@/hooks/use-active-chat";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import {
@@ -28,6 +29,7 @@ export function PureMessageActions({
   preguntaUsuario?: string;
 }) {
   const { mutate } = useSWRConfig();
+  const activeChat = useActiveChat();
   const [_, copyToClipboard] = useCopyToClipboard();
 
   if (isLoading) return null;
@@ -53,7 +55,16 @@ export function PureMessageActions({
       return;
     }
     const params = new URLSearchParams(window.location.search);
-    const materia = params.get("materia") ?? "sin-materia";
+    let materia = params.get("materia") ?? activeChat.materia ?? "";
+    if (!materia) {
+      try {
+        const chatRes = await fetch(`/api/messages?chatId=${chatId}`);
+        if (chatRes.ok) {
+          const chatData = await chatRes.json();
+          materia = chatData?.materia ?? "";
+        }
+      } catch {}
+    }
     try {
       const res = await fetch("/api/auth/recursos", {
         method: "POST",
@@ -74,7 +85,16 @@ export function PureMessageActions({
 
   const handlePedirAyuda = async () => {
     const params = new URLSearchParams(window.location.search);
-    const materia = params.get("materia") ?? "sin-materia";
+    let materia = params.get("materia") ?? activeChat.materia ?? "";
+    if (!materia) {
+      try {
+        const chatRes = await fetch(`/api/messages?chatId=${chatId}`);
+        if (chatRes.ok) {
+          const chatData = await chatRes.json();
+          materia = chatData?.materia ?? "";
+        }
+      } catch {}
+    }
     const pregunta = preguntaUsuario ?? textFromParts ?? "Pregunta sin texto";
     try {
       const res = await fetch("/api/auth/consultas", {

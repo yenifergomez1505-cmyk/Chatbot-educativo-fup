@@ -11,7 +11,9 @@ test.describe("Módulo 1 - Autenticación", () => {
     await page.goto("/register");
     await expect(page.getByPlaceholder("Juan Camilo Pérez")).toBeVisible();
     await expect(page.getByPlaceholder("@fup.edu.co")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Registrarse" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Registrarse" })
+    ).toBeVisible();
   });
 
   test("navegar de login a registro", async ({ page }) => {
@@ -28,13 +30,18 @@ test.describe("Módulo 1 - Autenticación", () => {
 
   test("no permite login con credenciales incorrectas", async ({ page }) => {
     await page.goto("/login");
-    await page.getByPlaceholder("jperez@fup.edu.co").fill("noexiste@fup.edu.co");
+    await page
+      .getByPlaceholder("jperez@fup.edu.co")
+      .fill("noexiste@fup.edu.co");
     await page.getByPlaceholder("••••••••").fill("wrongpassword");
     await page.getByRole("button", { name: "Ingresar" }).click();
+    // Verificar que no redirige al chat — sigue en login
     await expect(page).toHaveURL("/login");
   });
 
-  test("la landing page se carga para usuarios no autenticados", async ({ page }) => {
+  test("la landing page se carga para usuarios no autenticados", async ({
+    page,
+  }) => {
     await page.goto("/");
     await expect(
       page.getByRole("heading", { name: /Tu asistente académico/i })

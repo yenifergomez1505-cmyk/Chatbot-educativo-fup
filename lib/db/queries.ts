@@ -799,6 +799,7 @@ export async function getEstadisticas() {
       promCalificacion,
       temasPopulares,
       consultasPorMateria: temasPopulares,
+      pendientes: await db.select({ id: consultasSinRespuesta.id, pregunta: consultasSinRespuesta.pregunta, materia: consultasSinRespuesta.materia }).from(consultasSinRespuesta).where(eq(consultasSinRespuesta.respondida, false)).orderBy(desc(consultasSinRespuesta.creadoEn)).limit(20),
       periodo: new Date().toLocaleDateString("es-CO", {
         month: "long",
         year: "numeric",

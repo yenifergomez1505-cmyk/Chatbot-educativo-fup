@@ -9,7 +9,7 @@ const MATERIA_LABELS: Record<string, string> = {
 export default async function EstadisticasPage() {
   const stats = await getEstadisticas();
 
-  const maxConsultas = Math.max(...stats.temasPopulares.map((t) => t.count), 1);
+  const maxConsultas = Math.max(...stats.temasPopulares.map((t) => t.total), 1);
 
   return (
     <div>
@@ -59,20 +59,20 @@ export default async function EstadisticasPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {stats.temasPopulares.map((t) => (
-              <div className="flex items-center gap-3" key={t.tema}>
+              <div className="flex items-center gap-3" key={t.materia}>
                 <div className="w-48 text-xs text-[#082e56] truncate shrink-0">
-                  {MATERIA_LABELS[t.tema] ?? t.tema}
+                  {MATERIA_LABELS[t.materia] ?? t.materia}
                 </div>
                 <div className="flex-1 bg-[#e0eef9] rounded-full h-2">
                   <div
                     className="bg-[#0f4c8a] h-2 rounded-full transition-all"
                     style={{
-                      width: `${Math.round((t.count / maxConsultas) * 100)}%`,
+                      width: `${Math.round((t.total / maxConsultas) * 100)}%`,
                     }}
                   />
                 </div>
                 <div className="text-xs text-[#4a8dc4] w-8 text-right shrink-0">
-                  {t.count}
+                  {t.total}
                 </div>
               </div>
             ))}
@@ -92,20 +92,20 @@ export default async function EstadisticasPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {stats.consultasPorMateria.map((m) => (
-              <div className="flex items-center gap-3" key={m.tema}>
+              <div className="flex items-center gap-3" key={m.materia}>
                 <div className="w-48 text-xs text-[#082e56] truncate shrink-0">
-                  {MATERIA_LABELS[m.tema] ?? m.tema}
+                  {MATERIA_LABELS[m.materia] ?? m.materia}
                 </div>
                 <div className="flex-1 bg-[#e0eef9] rounded-full h-2">
                   <div
                     className="bg-[#1a6ab5] h-2 rounded-full transition-all"
                     style={{
-                      width: `${Math.round((m.count / maxConsultas) * 100)}%`,
+                      width: `${Math.round((m.total / maxConsultas) * 100)}%`,
                     }}
                   />
                 </div>
                 <div className="text-xs text-[#4a8dc4] w-8 text-right shrink-0">
-                  {m.count}
+                  {m.total}
                 </div>
               </div>
             ))}

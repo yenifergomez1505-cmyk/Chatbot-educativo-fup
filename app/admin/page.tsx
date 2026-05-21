@@ -131,7 +131,9 @@ export default function AdminPage() {
           setConsultas(Array.isArray(data) ? data : []);
         } else if (tipo === "materias") {
           const saved = localStorage.getItem("materiasActivas");
-          if (saved) {setMateriasActivas(JSON.parse(saved));}
+          if (saved) {
+            setMateriasActivas(JSON.parse(saved));
+          }
         }
       } catch {
         toast.error("Error al cargar datos");
@@ -178,7 +180,9 @@ export default function AdminPage() {
   };
 
   const handleEliminar = async (userId: string) => {
-    if (!confirm("¿Eliminar este usuario?")) {return;}
+    if (!confirm("¿Eliminar este usuario?")) {
+      return;
+    }
     await fetch(`/api/admin?userId=${userId}`, { method: "DELETE" });
     setUsuarios((prev) => prev.filter((x) => x.id !== userId));
     toast.success("Usuario eliminado");
@@ -271,9 +275,9 @@ export default function AdminPage() {
         <span className="text-white/70 text-sm">Administrador del sistema</span>
       </div>
 
-      <div className="flex min-h-[calc(100vh-60px)]">
+      <div className="flex h-[calc(100vh-60px)] overflow-hidden">
         {/* Sidebar */}
-        <div className="w-48 bg-[#082e56] flex flex-col pt-4">
+        <div className="hidden md:flex w-48 bg-[#082e56] flex-col pt-4 shrink-0 overflow-y-auto">
           <div className="px-4 pb-4 border-b border-white/10">
             <p className="text-white font-semibold text-sm">Panel Admin</p>
             <p className="text-white/50 text-xs">Administrador</p>
@@ -321,9 +325,9 @@ export default function AdminPage() {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-3 md:p-6 overflow-y-auto">
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             {[
               { label: "Usuarios activos", value: totalUsuarios },
               { label: "Consultas totales", value: totalConsultas },
@@ -537,16 +541,11 @@ export default function AdminPage() {
                                 {c.pregunta}
                               </p>
                               <span className="text-xs px-2 py-0.5 rounded-full bg-[#e0eef9] text-[#0f4c8a] font-medium mt-1 inline-block">
-                                {MATERIA_LABELS[c.materia] ?? c.materia}
+                                {c.materia
+                                  ? (MATERIA_LABELS[c.materia] ?? c.materia)
+                                  : "Sin materia asignada"}
                               </span>
                             </div>
-                            <button
-                              className="text-xs px-3 py-1.5 rounded-lg bg-[#0f4c8a] text-white font-medium hover:bg-[#082e56] transition-colors shrink-0 ml-4"
-                              onClick={() => setTab("consultas")}
-                              type="button"
-                            >
-                              Responder
-                            </button>
                           </div>
                         ))}
                       </div>
@@ -589,27 +588,10 @@ export default function AdminPage() {
                           {c.pregunta}
                         </p>
                         {!c.respondida && (
-                          <div className="space-y-2">
-                            <textarea
-                              className="w-full rounded-xl border border-[#7aaed8] bg-[#e0eef9] px-4 py-2.5 text-sm focus:outline-none resize-none"
-                              onChange={(e) =>
-                                setRespuesta((prev) => ({
-                                  ...prev,
-                                  [c.id]: e.target.value,
-                                }))
-                              }
-                              placeholder="Escribe tu respuesta..."
-                              rows={3}
-                              value={respuesta[c.id] ?? ""}
-                            />
-                            <button
-                              className="px-4 py-2 bg-[#0f4c8a] text-white rounded-xl text-sm font-medium hover:bg-[#082e56] transition-colors"
-                              onClick={() => handleResponder(c.id)}
-                              type="button"
-                            >
-                              Enviar respuesta
-                            </button>
-                          </div>
+                          <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                            Esta consulta debe ser respondida por el docente
+                            desde su panel.
+                          </p>
                         )}
                       </div>
                     ))

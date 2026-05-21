@@ -32,9 +32,9 @@ export default async function DocenteLayout({
     .slice(0, 2);
 
   return (
-    <div className="flex min-h-screen font-sans">
+    <div className="flex h-screen font-sans overflow-hidden">
       {/* Sidebar — iconos solos en móvil, iconos+texto en desktop */}
-      <aside className="bg-[#082e56] flex flex-col shrink-0 min-h-screen w-12 md:w-48 transition-all duration-300">
+      <aside className="bg-[#082e56] flex flex-col shrink-0 h-screen w-12 md:w-48 transition-all duration-300 sticky top-0">
         {/* Logo */}
         <div className="px-2 md:px-4 py-4 border-b border-white/10 mb-2">
           <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ export default async function DocenteLayout({
       </aside>
 
       {/* Contenido principal */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Header */}
         <div className="bg-[#082e56] px-4 md:px-6 flex items-center justify-between h-12 shrink-0">
           <span className="text-white text-sm font-medium">
