@@ -131,7 +131,7 @@ export default function AdminPage() {
           setConsultas(Array.isArray(data) ? data : []);
         } else if (tipo === "materias") {
           const saved = localStorage.getItem("materiasActivas");
-          if (saved) setMateriasActivas(JSON.parse(saved));
+          if (saved) {setMateriasActivas(JSON.parse(saved));}
         }
       } catch {
         toast.error("Error al cargar datos");
@@ -178,7 +178,7 @@ export default function AdminPage() {
   };
 
   const handleEliminar = async (userId: string) => {
-    if (!confirm("¿Eliminar este usuario?")) return;
+    if (!confirm("¿Eliminar este usuario?")) {return;}
     await fetch(`/api/admin?userId=${userId}`, { method: "DELETE" });
     setUsuarios((prev) => prev.filter((x) => x.id !== userId));
     toast.success("Usuario eliminado");
