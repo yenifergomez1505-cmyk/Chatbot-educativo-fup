@@ -162,7 +162,7 @@ const materia = MATERIAS.find((m) => m.id === materiaActiva)!;
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header — igual al de recursos */}
       <div className="bg-primary px-6 py-4 flex items-center gap-3">
         <button
@@ -181,7 +181,7 @@ const materia = MATERIAS.find((m) => m.id === materiaActiva)!;
         </span>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-5 overflow-y-auto flex-1">
         {/* Tabs de materias */}
         <div className="flex items-center gap-2 flex-wrap">
           {MATERIAS.map((m) => (

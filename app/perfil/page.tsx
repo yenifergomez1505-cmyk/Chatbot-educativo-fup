@@ -119,7 +119,7 @@ export default function PerfilPage() {
     : "??";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <div className="bg-primary px-6 py-4 flex items-center gap-3">
         <button
           type="button"
@@ -133,7 +133,7 @@ export default function PerfilPage() {
         </h1>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-lg mx-auto px-4 py-8 space-y-6 overflow-y-auto flex-1">
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
             {preview ? (

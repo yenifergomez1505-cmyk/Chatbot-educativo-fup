@@ -74,7 +74,7 @@ export default function RecursosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
       <div className="bg-primary px-6 py-4 flex items-center gap-3">
         <button
@@ -93,7 +93,7 @@ export default function RecursosPage() {
         </span>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 overflow-y-auto flex-1">
         {/* Filtro por materia */}
         <div className="flex items-center gap-2 flex-wrap">
           <FilterIcon className="size-4 text-muted-foreground" />
