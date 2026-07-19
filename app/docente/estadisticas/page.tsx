@@ -1,19 +1,13 @@
+import { BarraProgreso } from "@/components/docente/BarraProgreso";
+import { StatCard } from "@/components/docente/StatCard";
 import { getEstadisticas } from "@/lib/db/queries";
-
-const MATERIA_LABELS: Record<string, string> = {
-  poo: "POO",
-  "estructura-de-datos": "Estructura de Datos",
-  "ingenieria-de-software": "Ingeniería de Software I",
-};
 
 export default async function EstadisticasPage() {
   const stats = await getEstadisticas();
-
   const maxConsultas = Math.max(...stats.temasPopulares.map((t) => t.total), 1);
 
   return (
     <div>
-      {/* Encabezado */}
       <div className="mb-5">
         <h1 className="text-lg font-semibold text-[#082e56]">
           Estadísticas de mis materias
@@ -21,33 +15,24 @@ export default async function EstadisticasPage() {
         <p className="text-xs text-[#1a6ab5] mt-0.5">{stats.periodo}</p>
       </div>
 
-      {/* Stats globales */}
       <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="bg-[#c8dff2] rounded-xl px-4 py-3 text-center">
-          <div className="text-2xl font-bold text-[#0f4c8a]">
-            {stats.totalConsultas}
-          </div>
-          <div className="text-[10px] text-[#1a6ab5] mt-1">
-            Consultas totales
-          </div>
-        </div>
-        <div className="bg-[#c8dff2] rounded-xl px-4 py-3 text-center">
-          <div className="text-2xl font-bold text-[#0f4c8a]">
-            {stats.totalUsuarios}
-          </div>
-          <div className="text-[10px] text-[#1a6ab5] mt-1">
-            Estudiantes activos
-          </div>
-        </div>
-        <div className="bg-[#c8dff2] rounded-xl px-4 py-3 text-center">
-          <div className="text-2xl font-bold text-amber-700">
-            {stats.promCalificacion}/5
-          </div>
-          <div className="text-[10px] text-[#1a6ab5] mt-1">Satisfacción IA</div>
-        </div>
+        <StatCard
+          color="text-[#0f4c8a]"
+          label="Consultas totales"
+          numero={stats.totalConsultas}
+        />
+        <StatCard
+          color="text-[#0f4c8a]"
+          label="Estudiantes activos"
+          numero={stats.totalUsuarios}
+        />
+        <StatCard
+          color="text-amber-700"
+          label="Satisfacción IA"
+          numero={`${stats.promCalificacion}/5`}
+        />
       </div>
 
-      {/* Temas más consultados */}
       <div className="bg-white border border-[#7aaed8] rounded-xl p-4 mb-4">
         <h2 className="text-sm font-semibold text-[#082e56] mb-4">
           Temas más consultados
@@ -59,28 +44,18 @@ export default async function EstadisticasPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {stats.temasPopulares.map((t) => (
-              <div className="flex items-center gap-3" key={t.materia}>
-                <div className="w-48 text-xs text-[#082e56] truncate shrink-0">
-                  {MATERIA_LABELS[t.materia] ?? t.materia}
-                </div>
-                <div className="flex-1 bg-[#e0eef9] rounded-full h-2">
-                  <div
-                    className="bg-[#0f4c8a] h-2 rounded-full transition-all"
-                    style={{
-                      width: `${Math.round((t.total / maxConsultas) * 100)}%`,
-                    }}
-                  />
-                </div>
-                <div className="text-xs text-[#4a8dc4] w-8 text-right shrink-0">
-                  {t.total}
-                </div>
-              </div>
+              <BarraProgreso
+                color="bg-[#0f4c8a]"
+                key={t.materia}
+                materia={t.materia}
+                maximo={maxConsultas}
+                total={t.total}
+              />
             ))}
           </div>
         )}
       </div>
 
-      {/* Consultas por materia */}
       <div className="bg-white border border-[#7aaed8] rounded-xl p-4">
         <h2 className="text-sm font-semibold text-[#082e56] mb-4">
           Consultas por materia
@@ -92,22 +67,13 @@ export default async function EstadisticasPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {stats.consultasPorMateria.map((m) => (
-              <div className="flex items-center gap-3" key={m.materia}>
-                <div className="w-48 text-xs text-[#082e56] truncate shrink-0">
-                  {MATERIA_LABELS[m.materia] ?? m.materia}
-                </div>
-                <div className="flex-1 bg-[#e0eef9] rounded-full h-2">
-                  <div
-                    className="bg-[#1a6ab5] h-2 rounded-full transition-all"
-                    style={{
-                      width: `${Math.round((m.total / maxConsultas) * 100)}%`,
-                    }}
-                  />
-                </div>
-                <div className="text-xs text-[#4a8dc4] w-8 text-right shrink-0">
-                  {m.total}
-                </div>
-              </div>
+              <BarraProgreso
+                color="bg-[#1a6ab5]"
+                key={m.materia}
+                materia={m.materia}
+                maximo={maxConsultas}
+                total={m.total}
+              />
             ))}
           </div>
         )}

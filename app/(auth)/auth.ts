@@ -14,7 +14,7 @@ declare module "next-auth" {
     user: {
       id: string;
       type: UserType;
-      // ✅ NUEVO: rol del usuario
+      //  NUEVO: rol del usuario
       role: UserRole;
     } & DefaultSession["user"];
   }
@@ -23,7 +23,7 @@ declare module "next-auth" {
     id?: string;
     email?: string | null;
     type: UserType;
-    // ✅ NUEVO: rol del usuario
+    // NUEVO: rol del usuario
     role: UserRole;
   }
 }
@@ -32,7 +32,7 @@ declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     id: string;
     type: UserType;
-    // ✅ NUEVO: rol del usuario
+    //  NUEVO: rol del usuario
     role: UserRole;
   }
 }
@@ -73,7 +73,7 @@ export const {
           return null;
         }
 
-        // ✅ CAMBIADO: incluye el rol del usuario
+        // CAMBIADO: incluye el rol del usuario
         return { ...user, type: "regular", role: user.role };
       },
     }),
@@ -82,31 +82,31 @@ export const {
       credentials: {},
       async authorize() {
         const [guestUser] = await createGuestUser();
-        // ✅ CAMBIADO: los guests siempre son estudiantes
+        //  CAMBIADO: los guests siempre son estudiantes
         return { ...guestUser, type: "guest", role: "estudiante" as UserRole };
       },
     }),
   ],
   callbacks: {
-   jwt({ token, user }) {
-  if (user) {
-    token.id = user.id as string;
-    token.type = user.type;
-    token.role = user.role;
-    token.name = user.name;
-    token.image = user.image;
-  }
-  return token;
-},
-session({ session, token }) {
-  if (session.user) {
-    session.user.id = token.id;
-    session.user.type = token.type;
-    session.user.role = token.role;
-    session.user.name = token.name;
-    session.user.image = token.image as string;
-  }
-  return session;
-},
+    jwt({ token, user }) {
+      if (user) {
+        token.id = user.id as string;
+        token.type = user.type;
+        token.role = user.role;
+        token.name = user.name;
+        token.image = user.image;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id;
+        session.user.type = token.type;
+        session.user.role = token.role;
+        session.user.name = token.name;
+        session.user.image = token.image as string;
+      }
+      return session;
+    },
   },
 });

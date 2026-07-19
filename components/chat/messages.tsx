@@ -2,6 +2,7 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import { ArrowDownIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useMessages } from "@/hooks/use-messages";
+import { obtenerPreguntaUsuario } from "@/lib/chat/obtener-pregunta-usuario";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -78,17 +79,7 @@ function PureMessages({
       >
         <div className="mx-auto flex min-h-full min-w-0 max-w-4xl flex-col gap-5 px-2 py-6 md:gap-7 md:px-4">
           {messages.map((message, index) => {
-            const preguntaUsuario =
-              message.role === "assistant"
-                ? messages
-                    .slice(0, index)
-                    .filter((m) => m.role === "user")
-                    .at(-1)
-                    ?.parts?.filter((p) => p.type === "text")
-                    .map((p) => (p as { type: "text"; text: string }).text)
-                    .join(" ")
-                    .trim()
-                : undefined;
+            const preguntaUsuario = obtenerPreguntaUsuario(messages, index);
 
             return (
               <PreviewMessage

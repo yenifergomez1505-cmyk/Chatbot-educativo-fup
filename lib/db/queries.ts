@@ -1,4 +1,4 @@
-import { recursoGuardado } from "./schema";
+import { recursoGuardado, temaConocimiento } from "./schema";
 import "server-only";
 
 import {
@@ -703,6 +703,55 @@ export async function deleteRecurso(id: string, userId: string) {
     .where(and(eq(recursoGuardado.id, id), eq(recursoGuardado.userId, userId)));
 }
 
+// ── Módulo 5: Base de conocimiento (temas que usa el chatbot) ──
+export async function getTemasConocimiento() {
+  return await db
+    .select()
+    .from(temaConocimiento)
+    .orderBy(desc(temaConocimiento.creadoEn));
+}
+
+export async function createTemaConocimiento({
+  materia,
+  nombre,
+  contenido,
+  activo,
+  creadoPor,
+}: {
+  materia: string;
+  nombre: string;
+  contenido: string;
+  activo: boolean;
+  creadoPor: string;
+}) {
+  return await db.insert(temaConocimiento).values({
+    materia,
+    nombre,
+    contenido,
+    activo,
+    creadoPor,
+  });
+}
+
+export async function updateTemaConocimiento(
+  id: string,
+  {
+    materia,
+    nombre,
+    contenido,
+    activo,
+  }: { materia: string; nombre: string; contenido: string; activo: boolean }
+) {
+  return await db
+    .update(temaConocimiento)
+    .set({ materia, nombre, contenido, activo })
+    .where(eq(temaConocimiento.id, id));
+}
+
+export async function deleteTemaConocimiento(id: string) {
+  return await db.delete(temaConocimiento).where(eq(temaConocimiento.id, id));
+}
+
 // ── Módulo 5: Administración ──
 
 export async function getAllUsers() {
@@ -799,7 +848,16 @@ export async function getEstadisticas() {
       promCalificacion,
       temasPopulares,
       consultasPorMateria: temasPopulares,
-      pendientes: await db.select({ id: consultasSinRespuesta.id, pregunta: consultasSinRespuesta.pregunta, materia: consultasSinRespuesta.materia }).from(consultasSinRespuesta).where(eq(consultasSinRespuesta.respondida, false)).orderBy(desc(consultasSinRespuesta.creadoEn)).limit(20),
+      pendientes: await db
+        .select({
+          id: consultasSinRespuesta.id,
+          pregunta: consultasSinRespuesta.pregunta,
+          materia: consultasSinRespuesta.materia,
+        })
+        .from(consultasSinRespuesta)
+        .where(eq(consultasSinRespuesta.respondida, false))
+        .orderBy(desc(consultasSinRespuesta.creadoEn))
+        .limit(20),
       periodo: new Date().toLocaleDateString("es-CO", {
         month: "long",
         year: "numeric",

@@ -197,3 +197,18 @@ export const recursoGuardado = pgTable("recurso_guardado", {
 });
 
 export type RecursoGuardado = InferSelectModel<typeof recursoGuardado>;
+
+// ── Módulo 5: Base de conocimiento (temas que usa el chatbot) ──
+export const temaConocimiento = pgTable("tema_conocimiento", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  materia: text("materia").notNull(),
+  nombre: text("nombre").notNull(),
+  contenido: text("contenido").notNull(),
+  activo: boolean("activo").default(true).notNull(),
+  creadoPor: uuid("creado_por")
+    .notNull()
+    .references(() => user.id),
+  creadoEn: timestamp("creado_en").defaultNow().notNull(),
+});
+
+export type TemaConocimiento = InferSelectModel<typeof temaConocimiento>;

@@ -2,41 +2,14 @@
 
 import { ArrowLeftIcon, GraduationCapIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-
-type Consulta = {
-  id: string;
-  pregunta: string;
-  materia: string;
-  respondida: boolean;
-  respuestaDocente: string | null;
-  creadoEn: string;
-};
+import { FiltroMateria } from "@/components/respuestas-docente/FiltroMateria";
+import { RespuestaCard } from "@/components/respuestas-docente/RespuestaCard";
+import { useRespuestasDocente } from "@/hooks/useRespuestasDocente";
 
 export default function RespuestasDocentePage() {
   const router = useRouter();
-  const [consultas, setConsultas] = useState<Consulta[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filtroMateria, setFiltroMateria] = useState("");
-
-  useEffect(() => {
-    const cargar = async () => {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (filtroMateria) params.append("materia", filtroMateria);
-        const res = await fetch(`/api/respuestas-docente?${params.toString()}`);
-        const data = await res.json();
-        setConsultas(data);
-      } catch {
-        toast.error("Error al cargar respuestas");
-      } finally {
-        setLoading(false);
-      }
-    };
-    cargar();
-  }, [filtroMateria]);
+  const { consultas, loading, filtroMateria, setFiltroMateria } =
+    useRespuestasDocente();
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
@@ -58,18 +31,7 @@ export default function RespuestasDocentePage() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-4 overflow-y-auto flex-1">
-        <select
-          className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          onChange={(e) => setFiltroMateria(e.target.value)}
-          value={filtroMateria}
-        >
-          <option value="">Todas las materias</option>
-          <option value="poo">POO</option>
-          <option value="estructura-de-datos">Estructura de Datos</option>
-          <option value="ingenieria-de-software">
-            Ingeniería de Software I
-          </option>
-        </select>
+        <FiltroMateria onChange={setFiltroMateria} value={filtroMateria} />
 
         {loading ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
@@ -80,41 +42,7 @@ export default function RespuestasDocentePage() {
             No hay respuestas del docente aún
           </div>
         ) : (
-          consultas.map((c) => (
-            <div
-              className="bg-card border border-border rounded-xl p-4 space-y-3"
-              key={c.id}
-            >
-              <p className="text-xs font-semibold text-primary uppercase tracking-wide">
-                Pregunta
-              </p>
-              <p className="text-sm font-medium text-foreground leading-relaxed">
-                {c.pregunta}
-              </p>
-
-              <div className="flex items-center gap-2">
-                <span className="bg-secondary text-secondary-foreground text-[10px] px-2 py-0.5 rounded-full">
-                  {c.materia}
-                </span>
-                <span className="text-[10px] text-muted-foreground">
-                  {new Date(c.creadoEn).toLocaleDateString("es-CO", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </span>
-              </div>
-
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
-                <p className="text-[10px] font-semibold text-primary uppercase tracking-wide mb-1">
-                  Respuesta del docente
-                </p>
-                <p className="text-sm text-foreground leading-relaxed border-l-2 border-primary/40 pl-2">
-                  {c.respuestaDocente}
-                </p>
-              </div>
-            </div>
-          ))
+          consultas.map((c) => <RespuestaCard consulta={c} key={c.id} />)
         )}
       </div>
     </div>
