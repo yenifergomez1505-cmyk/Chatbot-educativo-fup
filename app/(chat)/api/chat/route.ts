@@ -25,6 +25,10 @@ import { editDocument } from "@/lib/ai/tools/edit-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
+import {
+  registrarConsultaSiNoPuedeResponder,
+  registrarEstadisticaMateria,
+} from "@/lib/chat/edu-handlers";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
   createStreamId,
@@ -297,55 +301,22 @@ export async function POST(request: Request) {
           });
         }
 
-        // Guardar estadísticas por materia
         if (materia && message?.role === "user") {
-          try {
-            const { saveCalificacion } = await import("@/lib/db/queries");
-            await saveCalificacion({
-              chatId: id,
-              userId: session.user.id,
-              messageId: message.id,
-              util: true,
-              materia,
-            });
-          } catch (e) {
-            console.error("Error guardando estadística:", e);
-          }
-        }
+          // Estadísticas y consultas sin respuesta (lógica EduBot)
+          await registrarEstadisticaMateria({
+            materia,
+            chatId: id,
+            userId: session.user.id,
+            messageId: message.id,
+          });
 
-        // ✅ detectar cuando la IA no puede responder y guardar para el docente
-        if (materia && message?.role === "user") {
-          try {
-            const lastAssistantMsg = finishedMessages
-              .filter((m) => m.role === "assistant")
-              .at(-1);
-
-            const textContent = lastAssistantMsg?.parts
-              ?.filter((p: any) => p.type === "text")
-              .map((p: any) => p.text)
-              .join("")
-              .trim();
-
-            if (textContent?.startsWith("NO_PUEDO_RESPONDER:")) {
-              const { saveConsultaSinRespuesta } = await import(
-                "@/lib/db/queries"
-              );
-              const pregunta = message.parts
-                ?.filter((p: any) => p.type === "text")
-                .map((p: any) => p.text)
-                .join("")
-                .trim();
-
-              await saveConsultaSinRespuesta({
-                chatId: id,
-                userId: session.user.id,
-                pregunta: pregunta ?? "Pregunta sin texto",
-                materia,
-              });
-            }
-          } catch (e) {
-            console.error("Error guardando consulta sin respuesta:", e);
-          }
+          await registrarConsultaSiNoPuedeResponder({
+            materia,
+            chatId: id,
+            userId: session.user.id,
+            userMessage: message,
+            finishedMessages,
+          });
         }
       },
 
