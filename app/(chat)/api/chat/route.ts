@@ -90,6 +90,7 @@ export async function POST(request: Request) {
     if (!session?.user) {
       return new ChatbotError("unauthorized:chat").toResponse();
     }
+    console.log("DEBUG nombre usuario:", session.user.name);
 
     const chatModel = allowedModelIds.has(selectedChatModel)
       ? selectedChatModel
@@ -206,7 +207,7 @@ export async function POST(request: Request) {
         const result = streamText({
           model: getLanguageModel(chatModel),
           system: materia
-            ? getMateriaSystemPrompt(materia)
+            ? getMateriaSystemPrompt(materia, session.user.name ?? undefined)
             : systemPrompt({ requestHints, supportsTools }),
           messages: modelMessages,
           stopWhen: stepCountIs(5),

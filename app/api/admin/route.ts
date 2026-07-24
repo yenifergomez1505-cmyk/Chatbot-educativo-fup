@@ -1,25 +1,25 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/app/(auth)/auth";
+import { db } from "@/lib/db/client";
 import {
+  createUser,
   deleteUser,
+  getAllConsultas,
   getAllUsers,
+  getConsultasSinRespuesta,
   getEstadisticas,
   responderConsulta,
   updateUserRole,
 } from "@/lib/db/queries";
 import type { UserRole } from "@/lib/db/schema";
+import { user } from "@/lib/db/schema";
 
 async function verificarAdmin() {
   const session = await auth();
   if (!session?.user?.id) {
     return null;
   }
-  const client = postgres(process.env.POSTGRES_URL ?? "");
-  const db = drizzle(client);
-  const { user } = await import("@/lib/db/schema");
-  const { eq } = await import("drizzle-orm");
   const [dbUser] = await db
     .select({ role: user.role })
     .from(user)
@@ -41,21 +41,21 @@ export async function GET(request: Request) {
   }
   const { searchParams } = new URL(request.url);
   const tipo = searchParams.get("tipo");
+
   if (tipo === "estadisticas") {
     const stats = await getEstadisticas();
     return Response.json(stats);
   }
+
   if (tipo === "consultas") {
     const materia = searchParams.get("materia") ?? undefined;
     const todas = searchParams.get("todas") === "true";
-    const { getConsultasSinRespuesta, getAllConsultas } = await import(
-      "@/lib/db/queries"
-    );
     const consultas = todas
       ? await getAllConsultas(materia)
       : await getConsultasSinRespuesta(materia);
     return Response.json(consultas);
   }
+
   const usuarios = await getAllUsers();
   return Response.json(usuarios);
 }
@@ -78,7 +78,6 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return new Response("Datos inválidos", { status: 400 });
   }
-  const { createUser } = await import("@/lib/db/queries");
   await createUser(
     parsed.data.email,
     parsed.data.password,
@@ -94,6 +93,7 @@ export async function PATCH(request: Request) {
     return new Response("No autorizado", { status: 403 });
   }
   const body = await request.json();
+
   if (body.tipo === "rol") {
     const schema = z.object({
       userId: z.string(),
@@ -106,6 +106,7 @@ export async function PATCH(request: Request) {
     await updateUserRole(parsed.data.userId, parsed.data.role as UserRole);
     return Response.json({ success: true });
   }
+
   if (body.tipo === "responder") {
     const schema = z.object({
       consultaId: z.string(),
@@ -118,6 +119,7 @@ export async function PATCH(request: Request) {
     await responderConsulta(parsed.data.consultaId, parsed.data.respuesta);
     return Response.json({ success: true });
   }
+
   return new Response("Tipo no válido", { status: 400 });
 }
 

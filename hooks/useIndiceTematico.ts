@@ -1,6 +1,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { MATERIAS_INDICE } from "@/types/materias-indice";
+import { MATERIAS_INDICE } from "@/lib/data/materias-indice";
 
 export function useIndiceTematico() {
   const router = useRouter();
