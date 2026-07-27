@@ -11,11 +11,25 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-export default async function DocenteLayout({
+export default function DocenteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center text-sm text-[#1a6ab5]">
+          Cargando...
+        </div>
+      }
+    >
+      <DocenteShell>{children}</DocenteShell>
+    </Suspense>
+  );
+}
+
+async function DocenteShell({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
   const role = headersList.get("x-user-role") ?? "estudiante";
   const nombre = headersList.get("x-user-name") ?? "Docente";

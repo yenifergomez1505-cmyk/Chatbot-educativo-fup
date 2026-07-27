@@ -33,7 +33,7 @@ export const MATERIA_LABELS: Record<string, string> = {
 };
 
 export const MATERIAS_CONOCIMIENTO = [
-  "Ingeniería de Software I",
-  "Estructura de Datos",
-  "Programación Orientada a Objetos",
+  "poo",
+  "estructura-de-datos",
+  "ingenieria-de-software",
 ] as const;

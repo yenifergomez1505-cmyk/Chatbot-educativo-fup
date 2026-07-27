@@ -1,5 +1,5 @@
 import "server-only";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "../client";
 import { temaConocimiento } from "../schema";
 
@@ -7,6 +7,19 @@ export async function getTemasConocimiento() {
   return await db
     .select()
     .from(temaConocimiento)
+    .orderBy(desc(temaConocimiento.creadoEn));
+}
+
+export async function getTemasActivosPorMateria(materia: string) {
+  return await db
+    .select()
+    .from(temaConocimiento)
+    .where(
+      and(
+        eq(temaConocimiento.materia, materia),
+        eq(temaConocimiento.activo, true)
+      )
+    )
     .orderBy(desc(temaConocimiento.creadoEn));
 }
 

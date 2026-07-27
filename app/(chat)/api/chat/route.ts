@@ -1,4 +1,5 @@
 import { geolocation, ipAddress } from "@vercel/functions";
+
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -25,6 +26,12 @@ import { editDocument } from "@/lib/ai/tools/edit-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
+import {
+  construirListadoTemas,
+  construirMensajeTemaNoVisto,
+  obtenerTemasActivos,
+  preguntaCoincideConTemas,
+} from "@/lib/chat/contexto-conocimiento";
 import {
   registrarConsultaSiNoPuedeResponder,
   registrarEstadisticaMateria,
@@ -90,7 +97,6 @@ export async function POST(request: Request) {
     if (!session?.user) {
       return new ChatbotError("unauthorized:chat").toResponse();
     }
-    console.log("DEBUG nombre usuario:", session.user.name);
 
     const chatModel = allowedModelIds.has(selectedChatModel)
       ? selectedChatModel
@@ -201,26 +207,68 @@ export async function POST(request: Request) {
 
     const modelMessages = await convertToModelMessages(uiMessages);
 
+    // temas activos para esta materia (lo que el profesor ya vio en clase)
+    const temasActivos = materia ? await obtenerTemasActivos(materia) : [];
+    const listadoTemas = construirListadoTemas(temasActivos);
+
+    const textoPregunta =
+      message?.parts
+        ?.filter((p: any) => p.type === "text")
+        .map((p: any) => p.text)
+        .join(" ") ?? "";
+
+    const temaPermitido = materia
+      ? preguntaCoincideConTemas(textoPregunta, temasActivos)
+      : true;
+
+    console.log(
+      materia
+        ? getMateriaSystemPrompt(materia, session.user.name ?? undefined, {
+            hayTemasActivos: temasActivos.length > 0,
+            temaPermitido,
+            listadoTemas,
+          })
+        : "sin materia"
+    );
+    console.log("=== FIN ===");
+
     const stream = createUIMessageStream({
       originalMessages: isToolApprovalFlow ? uiMessages : undefined,
       execute: async ({ writer: dataStream }) => {
+        // Si el tema no está permitido, respondemos nosotros directamente
+        // sin llamarle al modelo de IA (así garantizamos que se cumpla siempre)
+        if (materia && (temasActivos.length === 0 || !temaPermitido)) {
+          const mensaje = construirMensajeTemaNoVisto(
+            temasActivos.length > 0,
+            listadoTemas
+          );
+          const textId = generateUUID();
+          dataStream.write({ type: "text-start", id: textId });
+          dataStream.write({ type: "text-delta", id: textId, delta: mensaje });
+          dataStream.write({ type: "text-end", id: textId });
+          return;
+        }
+
         const result = streamText({
           model: getLanguageModel(chatModel),
           system: materia
-            ? getMateriaSystemPrompt(materia, session.user.name ?? undefined)
+            ? getMateriaSystemPrompt(materia, session.user.name ?? undefined, {
+                hayTemasActivos: temasActivos.length > 0,
+                temaPermitido,
+                listadoTemas,
+              })
             : systemPrompt({ requestHints, supportsTools }),
           messages: modelMessages,
           stopWhen: stepCountIs(5),
-          experimental_activeTools:
-            isReasoningModel && !supportsTools
-              ? []
-              : [
-                  "getWeather",
-                  "createDocument",
-                  "editDocument",
-                  "updateDocument",
-                  "requestSuggestions",
-                ],
+          experimental_activeTools: supportsTools
+            ? [
+                "getWeather",
+                "createDocument",
+                "editDocument",
+                "updateDocument",
+                "requestSuggestions",
+              ]
+            : [],
           providerOptions: {
             ...(modelConfig?.gatewayOrder && {
               gateway: { order: modelConfig.gatewayOrder },
@@ -322,6 +370,7 @@ export async function POST(request: Request) {
       },
 
       onError: (error) => {
+        console.error("🔴 ERROR REAL EN EL STREAM:", error);
         if (
           error instanceof Error &&
           error.message?.includes(

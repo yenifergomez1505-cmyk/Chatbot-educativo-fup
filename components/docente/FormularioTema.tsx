@@ -1,5 +1,5 @@
 import type { TemaFormValues } from "@/types/docente";
-import { MATERIAS_CONOCIMIENTO } from "@/types/docente";
+import { MATERIA_LABELS, MATERIAS_CONOCIMIENTO } from "@/types/docente";
 
 export function FormularioTema({
   form,
@@ -40,7 +40,7 @@ export function FormularioTema({
           >
             {MATERIAS_CONOCIMIENTO.map((m) => (
               <option key={m} value={m}>
-                {m}
+                {MATERIA_LABELS[m]}
               </option>
             ))}
           </select>
