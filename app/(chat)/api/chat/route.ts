@@ -370,7 +370,6 @@ export async function POST(request: Request) {
       },
 
       onError: (error) => {
-        console.error("🔴 ERROR REAL EN EL STREAM:", error);
         if (
           error instanceof Error &&
           error.message?.includes(
