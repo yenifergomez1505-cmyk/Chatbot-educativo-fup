@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 import {
   AlertDialog,
@@ -64,8 +63,6 @@ export function ChatShell() {
 
   const { setArtifact } = useArtifact();
 
-  const searchParams = useSearchParams();
-
   const stopRef = useRef(stop);
   stopRef.current = stop;
 
@@ -81,21 +78,6 @@ export function ChatShell() {
     }
   }, [chatId, setArtifact]);
 
-  useEffect(() => {
-    const query = searchParams.get("query");
-
-    if (query && messages.length === 0) {
-      sendMessage({
-        role: "user",
-        parts: [
-          {
-            type: "text",
-            text: query,
-          },
-        ],
-      });
-    }
-  }, [searchParams, messages.length, sendMessage]);
   return (
     <>
       <div className="flex h-dvh w-full flex-row overflow-hidden">
@@ -135,9 +117,9 @@ export function ChatShell() {
               votes={votes}
             />
 
-           <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
-                {!isReadonly && messages.length > 0 && (
-                 <MultimodalInput
+            <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
+              {!isReadonly && messages.length > 0 && (
+                <MultimodalInput
                   attachments={attachments}
                   chatId={chatId}
                   editingMessage={editingMessage}
@@ -212,10 +194,8 @@ export function ChatShell() {
 
             <AlertDialogDescription>
               This application requires{" "}
-              {process.env.NODE_ENV === "production"
-                ? "the owner"
-                : "you"}{" "}
-              to activate Vercel AI Gateway.
+              {process.env.NODE_ENV === "production" ? "the owner" : "you"} to
+              activate Vercel AI Gateway.
             </AlertDialogDescription>
           </AlertDialogHeader>
 

@@ -1,11 +1,9 @@
-import type { MateriaIndice } from "@/types/materias-indice";
-
 export function TabsMaterias({
   materias,
   materiaActivaId,
   onSeleccionar,
 }: {
-  materias: MateriaIndice[];
+  materias: { id: string; nombre: string; emoji: string }[];
   materiaActivaId: string;
   onSeleccionar: (id: string) => void;
 }) {

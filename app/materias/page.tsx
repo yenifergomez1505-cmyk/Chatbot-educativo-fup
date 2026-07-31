@@ -1,5 +1,4 @@
 "use client";
-
 import { motion } from "framer-motion";
 import { ArrowLeftIcon, BookOpenIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -14,6 +13,7 @@ export default function MateriasPage() {
     materiaActivaId,
     setMateriaActivaId,
     materiaActiva,
+    cargando,
     handlePreguntarTema,
   } = useIndiceTematico();
 
@@ -35,7 +35,6 @@ export default function MateriasPage() {
           {materiaActiva.temas.length} temas
         </span>
       </div>
-
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-5 overflow-y-auto flex-1">
         <TabsMaterias
           materiaActivaId={materiaActivaId}
@@ -43,22 +42,33 @@ export default function MateriasPage() {
           onSeleccionar={setMateriaActivaId}
         />
 
-        <motion.div
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 gap-3 md:grid-cols-2"
-          initial={{ opacity: 0, y: 8 }}
-          key={materiaActivaId}
-          transition={{ duration: 0.25 }}
-        >
-          {materiaActiva.temas.map((tema, i) => (
-            <TemaCard
-              key={tema.titulo}
-              numero={i}
-              onPreguntar={handlePreguntarTema}
-              tema={tema}
-            />
-          ))}
-        </motion.div>
+        {cargando ? (
+          <div className="text-center py-12 text-muted-foreground text-sm">
+            Cargando temas...
+          </div>
+        ) : materiaActiva.temas.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground text-sm">
+            Tu profesor aún no ha activado temas para esta materia. Vuelve a
+            revisar más adelante.
+          </div>
+        ) : (
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 gap-3 md:grid-cols-2"
+            initial={{ opacity: 0, y: 8 }}
+            key={materiaActivaId}
+            transition={{ duration: 0.25 }}
+          >
+            {materiaActiva.temas.map((tema, i) => (
+              <TemaCard
+                key={tema.titulo}
+                numero={i}
+                onPreguntar={handlePreguntarTema}
+                tema={tema}
+              />
+            ))}
+          </motion.div>
+        )}
       </div>
     </div>
   );

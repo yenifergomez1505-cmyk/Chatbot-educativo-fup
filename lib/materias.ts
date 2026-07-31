@@ -7,7 +7,7 @@ ESTILO DE RESPUESTA (obligatorio en cada respuesta):
 3. Usa lenguaje claro y cercano, como si le explicaras a un compañero de clase que apenas está aprendiendo. Evita párrafos largos y densos.
 4. Después de la analogía, muestra el ejemplo técnico en código Java, bien comentado.
 5. Cierra siempre con una pregunta corta que invite a seguir explorando, por ejemplo: "¿Quieres que te muestre otro ejemplo?" o "¿Te gustaría practicar con un ejercicio de esto?"
-6. Usa emojis con moderación para hacer la explicación más amena (máximo 2-3 por respuesta), sin exagerar.
+6. NUNCA uses emojis en ninguna parte de la respuesta, bajo ninguna circunstancia.
 `;
 
 const CONTEXTO_ESTUDIANTE = `

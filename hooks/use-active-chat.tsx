@@ -3,7 +3,7 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   createContext,
   type Dispatch,
@@ -60,6 +60,7 @@ function extractChatId(pathname: string): string | null {
 
 export function ActiveChatProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { setDataStream } = useDataStream();
   const { mutate } = useSWRConfig();
 
@@ -224,12 +225,15 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
     }
   }, [chatData, isNewChat]);
 
-  const hasAppendedQueryRef = useRef(false);
+  const lastSentQueryRef = useRef<string | null>(null);
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const query = params.get("query");
-    if (query && !hasAppendedQueryRef.current) {
-      hasAppendedQueryRef.current = true;
+    const query = searchParams.get("query");
+    if (query && lastSentQueryRef.current !== query) {
+      lastSentQueryRef.current = query;
+      const materiaFromQuery = searchParams.get("materia") ?? undefined;
+      if (materiaFromQuery) {
+        materiaRef.current = materiaFromQuery;
+      }
       window.history.replaceState(
         {},
         "",
@@ -240,7 +244,7 @@ export function ActiveChatProvider({ children }: { children: ReactNode }) {
         parts: [{ type: "text", text: query }],
       });
     }
-  }, [sendMessage, chatId]);
+  }, [searchParams, sendMessage, chatId]);
 
   useAutoResume({
     autoResume: !isNewChat && !!chatData,
